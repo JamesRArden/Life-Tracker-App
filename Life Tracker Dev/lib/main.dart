@@ -41,8 +41,8 @@ class _HomePageState extends State<HomePage> {
           itemBuilder: (context, index) {
             return InkWell(
                 onTap: () {
-                Navigator.push(
-                  context,
+                  Navigator.push(
+                      context,
                       MaterialPageRoute(
                          builder: (context) => TrackerPage(trackername: items[index]),
                        ),
@@ -67,9 +67,7 @@ class _HomePageState extends State<HomePage> {
       // BUTTON THAT ADDS ITEMS
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          setState(() {
-            items.add("Item ${items.length + 1}");
-          });
+          _newtrackernameentry(items);
         },
         
        backgroundColor: const Color.fromARGB(255, 201, 167, 218),
@@ -82,6 +80,44 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  void _newtrackernameentry(items) {
+  String userinput = "";
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text("Enter new tracker name"),
+        content: TextField(
+          onChanged: (value) {
+            userinput = value;
+          },
+          decoration: InputDecoration(
+            hintText: "Type here...",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // close popup
+            },
+            child: Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                items.add(userinput); // add to your list
+              });
+              Navigator.pop(context);
+            },
+            child: Text("Add"),
+          ),
+        ],
+      );
+    },
+  );
+}
 }
 
 class TrackerPage extends StatefulWidget {
@@ -116,3 +152,4 @@ class _TrackerPageState extends State<TrackerPage> {
         );
   }
 }
+
