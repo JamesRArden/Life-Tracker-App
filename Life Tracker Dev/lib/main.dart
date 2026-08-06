@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
@@ -18,13 +20,37 @@ class MyApp extends StatelessWidget {
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => _HomePageState(); 
+  //When someone calls createState(), return a new _HomePageState() object
 }
 
 class _HomePageState extends State<HomePage> {
   // This list will store all the widgets/items you add
+
   List<String> items = [];
+
+  @override
+  void initState() {
+    super.initState();
+    LoadStoredTrackers();   // call async loader
+  }
+
+  Future<void> LoadStoredTrackers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString("Life-Trackers");
+
+    setState(() {
+       if (saved == null) {
+           items = [];
+        } else {
+            items = List<String>.from(jsonDecode(saved));
+        }
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -105,11 +131,21 @@ class _HomePageState extends State<HomePage> {
             child: Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: ()  async {
+                items.add(userinput);
+                final prefs = await SharedPreferences.getInstance();
+                prefs.setString("Life-Trackers", jsonEncode(items));
+                
               setState(() {
-                items.add(userinput); // add to your list
+             
               });
-              Navigator.pop(context);
+
+              if (!mounted) {
+                return;
+              }
+              else{
+                Navigator.pop(context);
+              }
             },
             child: Text("Add"),
           ),
