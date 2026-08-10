@@ -11,18 +11,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: const HomePage(),
-    );
+    return MaterialApp(home: const HomePage());
   }
 }
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-
   @override
-  State<HomePage> createState() => _HomePageState(); 
+  State<HomePage> createState() => _HomePageState();
   //When someone calls createState(), return a new _HomePageState() object
 }
 
@@ -34,7 +31,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    LoadStoredTrackers();   // call async loader
+    LoadStoredTrackers(); // call async loader
   }
 
   Future<void> LoadStoredTrackers() async {
@@ -42,15 +39,13 @@ class _HomePageState extends State<HomePage> {
     final saved = prefs.getString("Life-Trackers");
 
     setState(() {
-       if (saved == null) {
-           items = [];
-        } else {
-            items = List<String>.from(jsonDecode(saved));
-        }
+      if (saved == null) {
+        items = [];
+      } else {
+        items = List<String>.from(jsonDecode(saved));
+      }
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -58,33 +53,43 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text("Add Items Example"),
         backgroundColor: Colors.lightBlueAccent,
-     ),
+      ),
 
       // MAIN SCREEN CONTENT
       body: Center(
-        child: ListView.builder(         
+        child: ListView.builder(
           itemCount: items.length,
           itemBuilder: (context, index) {
             return InkWell(
-                onTap: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                         builder: (context) => TrackerPage(trackername: items[index]),
-                       ),
-                  );
-                },
-            child: Card(
-              margin: const EdgeInsets.all(10),
-              color: Colors.lightBlueAccent,
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-              child: Text(
-                  items[index],
-                  style: const TextStyle(fontSize: 22),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        TrackerPage(trackername: items[index]),
+                  ),
+                );
+              },
+              child: Card(
+                margin: const EdgeInsets.all(10),
+                color: Colors.lightBlueAccent,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(items[index], style: const TextStyle(fontSize: 22)),
+                      IconButton(
+                        onPressed: () {
+                          _trackeredit(items[index]);
+                        },
+                        icon: Icon(Icons.more_vert),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
             );
           },
         ),
@@ -95,65 +100,123 @@ class _HomePageState extends State<HomePage> {
         onPressed: () {
           _newtrackernameentry(items);
         },
-        
-       backgroundColor: const Color.fromARGB(255, 201, 167, 218),
-       splashColor: const Color.fromARGB(255, 202, 39, 189),
-    
-        child: const Icon(
-            Icons.add,
-            color: Colors.purpleAccent,
-            ),
+
+        backgroundColor: const Color.fromARGB(255, 201, 167, 218),
+        splashColor: const Color.fromARGB(255, 202, 39, 189),
+
+        child: const Icon(Icons.add, color: Colors.purpleAccent),
       ),
     );
   }
 
   void _newtrackernameentry(items) {
-  String userinput = "";
+    String userinput = "";
 
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text("Enter new tracker name"),
-        content: TextField(
-          onChanged: (value) {
-            userinput = value;
-          },
-          decoration: InputDecoration(
-            hintText: "Type here...",
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context); // close popup
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Enter new tracker name"),
+          content: TextField(
+            onChanged: (value) {
+              userinput = value;
             },
-            child: Text("Cancel"),
+            decoration: InputDecoration(hintText: "Type here..."),
           ),
-          TextButton(
-            onPressed: ()  async {
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // close popup
+              },
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
                 items.add(userinput);
                 final prefs = await SharedPreferences.getInstance();
                 prefs.setString("Life-Trackers", jsonEncode(items));
-                
-              setState(() {
-             
-              });
 
-              if (!mounted) {
-                return;
-              }
-              else{
-                Navigator.pop(context);
-              }
-            },
-            child: Text("Add"),
+                setState(() {});
+
+                if (!mounted) {
+                  return;
+                } else {
+                  Navigator.pop(context);
+                }
+              },
+              child: Text("Add"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _trackeredit(item) {
+    String newtrackername = "";
+    final controller = TextEditingController(text: item);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Tracker Settings"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("Edit Name: "),
+                  Expanded(
+                    child: TextField(
+                      onChanged: (value) {
+                        newtrackername = value;
+                      },
+                      textAlign: TextAlign.center,
+                      controller: controller,
+                    ),
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+
+                children: [
+                  Text("Remove:"),
+                  Expanded(
+                    child: IconButton(
+                      onPressed: () {
+                        _deletetracker(item);
+                      },
+                      icon: Icon(Icons.delete),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
-      );
-    },
-  );
-}
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Cancel"),
+            ),
+
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: Text("Save"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  _deletetracker(trackername) {}
 }
 
 class TrackerPage extends StatefulWidget {
@@ -161,31 +224,24 @@ class TrackerPage extends StatefulWidget {
 
   const TrackerPage({super.key, required this.trackername});
 
-  
-
   @override
   State<TrackerPage> createState() => _TrackerPageState();
 }
 
 class _TrackerPageState extends State<TrackerPage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         title: Text(widget.trackername),
-         backgroundColor: Colors.lightBlueAccent,
-         ),
+        title: Text(widget.trackername),
+        backgroundColor: Colors.lightBlueAccent,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.pop(context);
-         },
-        child: const Icon(
-              Icons.add,
-              color: Colors.purpleAccent,
-            ),
-          ),
-        );
+        },
+        child: const Icon(Icons.add, color: Colors.purpleAccent),
+      ),
+    );
   }
 }
-
