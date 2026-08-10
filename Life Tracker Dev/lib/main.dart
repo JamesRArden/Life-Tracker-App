@@ -171,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
-                        _updatetrackername(item,value);
+                        _updatetrackername(item, value);
                       },
                       textAlign: TextAlign.center,
                       controller: controller,
@@ -216,42 +216,40 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
- _deletetracker(trackername)   async{
-      final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getString("Life-Trackers");
-      
+  _deletetracker(trackername) async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString("Life-Trackers");
 
-      if (saved == null) {
-        items = [];
-      } else {
-        items = List<String>.from(jsonDecode(saved));
-      }
+    if (saved == null) {
+      items = [];
+    } else {
+      items = List<String>.from(jsonDecode(saved));
+    }
 
-     items.remove(trackername);
-      
-     prefs.setString("Life-Trackers", jsonEncode(items));
-     setState(() {});
+    items.remove(trackername);
+
+    prefs.setString("Life-Trackers", jsonEncode(items));
+    setState(() {});
   }
 
-  _updatetrackername(oldname,newname) async{
-      final prefs = await SharedPreferences.getInstance();
-      final saved = prefs.getString("Life-Trackers");
-      
+  _updatetrackername(oldname, newname) async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString("Life-Trackers");
 
-      if (saved == null) {
-        items = [];
-      } else {
-        items = List<String>.from(jsonDecode(saved));
-      }
+    if (saved == null) {
+      items = [];
+    } else {
+      items = List<String>.from(jsonDecode(saved));
+    }
 
-      final index = items.indexOf(oldname);
+    final index = items.indexOf(oldname);
 
-      if (index != -1) {
-          items[index] = newname;
-      }
+    if (index != -1) {
+      items[index] = newname;
+    }
 
-      prefs.setString("Life-Trackers", jsonEncode(items));
-      setState(() {});
+    prefs.setString("Life-Trackers", jsonEncode(items));
+    setState(() {});
   }
 }
 
@@ -265,19 +263,92 @@ class TrackerPage extends StatefulWidget {
 }
 
 class _TrackerPageState extends State<TrackerPage> {
+  final Color colourscheme = Color.fromARGB(255, 104, 196, 161);
+  final DateTime date = DateTime.now();
+
+ 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.trackername),
+        title: Text(widget.trackername,
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: Colors.lightBlueAccent,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pop(context);
-        },
-        child: const Icon(Icons.add, color: Colors.purpleAccent),
+      body: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(20),
+            child: Row(  
+    
+              children: [
+                    Icon(Icons.arrow_left, size: 50),
+                    const Spacer(),
+                    Text("${date.day}/${date.month}/${date.year}",
+                     style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
+                    const Spacer(),
+                    Icon(Icons.arrow_right, size: 50),
+                ],
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsetsGeometry.directional(
+                top: 10,
+                end: 10,
+                start: 10,
+              ),
+              child: _calanderview(date, colourscheme),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  _calanderview(DateTime currentdate, Color colour) {
+    int daysinmonth = DateUtils.getDaysInMonth(
+      currentdate.year,
+      currentdate.month,
+    );
+
+    final List<DateTime> days = List.generate(
+      daysinmonth,
+      (index) => DateTime(currentdate.year, currentdate.month, index + 1),
+    );
+
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 7,
+        mainAxisSpacing: 4,
+        crossAxisSpacing: 4,
+        childAspectRatio: 0.7,
+      ),
+      itemCount: daysinmonth,
+      itemBuilder: (context, index) {
+        final day = days[index];
+        final squarecolour = colour;
+
+        return GestureDetector(
+          onTap: () => _daytapped(day),
+          child: Container(
+            decoration: BoxDecoration(
+              color: squarecolour,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: Center(
+              child: Text('${day.day}', style: const TextStyle(fontSize: 16)),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  _daytapped(day) {
+
   }
 }
