@@ -171,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
-                        newtrackername = value;
+                        _updatetrackername(item,value);
                       },
                       textAlign: TextAlign.center,
                       controller: controller,
@@ -216,7 +216,43 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _deletetracker(trackername) {}
+ _deletetracker(trackername)   async{
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString("Life-Trackers");
+      
+
+      if (saved == null) {
+        items = [];
+      } else {
+        items = List<String>.from(jsonDecode(saved));
+      }
+
+     items.remove(trackername);
+      
+     prefs.setString("Life-Trackers", jsonEncode(items));
+     setState(() {});
+  }
+
+  _updatetrackername(oldname,newname) async{
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString("Life-Trackers");
+      
+
+      if (saved == null) {
+        items = [];
+      } else {
+        items = List<String>.from(jsonDecode(saved));
+      }
+
+      final index = items.indexOf(oldname);
+
+      if (index != -1) {
+          items[index] = newname;
+      }
+
+      prefs.setString("Life-Trackers", jsonEncode(items));
+      setState(() {});
+  }
 }
 
 class TrackerPage extends StatefulWidget {
