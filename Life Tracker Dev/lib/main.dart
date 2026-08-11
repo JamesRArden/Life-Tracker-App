@@ -388,21 +388,29 @@ class _TrackerPageState extends State<TrackerPage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text("Success Meter"),
-          content: Column(
-              mainAxisSize: MainAxisSize.min,
-            children: [
-              Slider(
-                value: daywellness,
-                min: 1,
-                max: 10,
-                divisions: 9,
-                onChanged: (newValue) {},
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              title: Text("Success Meter"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Slider(
+                    value: daywellness,
+                    min: 1,
+                    max: 10,
+                    divisions: 9,
+                    onChanged: (newValue) {
+                      setStateDialog(() {
+                        daywellness = newValue;
+                      });
+                    },
+                  ),
+                  IconButton(icon: Icon(Icons.check), onPressed: () {}),
+                ],
               ),
-              IconButton(icon: Icon(Icons.check), onPressed: () {}),
-            ],
-          ),
+            );
+          },
         );
       },
     );
