@@ -350,6 +350,8 @@ class _TrackerPageState extends State<TrackerPage> {
      Future<void> loadrecord() async {
       monthrecords = await _getrelatedrecords(widget.trackername, currentdate);
       setState(() {});
+      print("reached1");
+      print(monthrecords);
     }
 
     @override
@@ -380,7 +382,7 @@ class _TrackerPageState extends State<TrackerPage> {
         
        
         for (var row in monthrecords) {
-          if(row["date"] == day){
+          if(row["date"] == day.tostringyyyymmdd()){
               return boxcolour(day, row["value"]);
           }
         }
@@ -466,33 +468,36 @@ class _TrackerPageState extends State<TrackerPage> {
     );
   }
  
-  _addrecord(trackername, daywellness, dateof) async {
+  _addrecord(trackername, daywellness, day) async {
     final db = await AppDatabase.database;
 
-    String day = dateof.date.day.toString();
-    String month = dateof.date.month.toString();
-    String year = dateof.date.year.toString();
-    String inputdate = "$year-$month-$day";
+   
     await db.insert('daily_entries', {
-      'date': inputdate,
+      'date': day.date.tostringyyyymmdd(),
       'tracker': trackername,
       'value': daywellness,
     });
+
+  final records =  await db.query(
+      'daily_entries',
+    );
+
+    print("reached1");
+    print(records);
   }
 
   _getrelatedrecords(trackername, day) async {
     final db = await AppDatabase.database;
 
-    String month = day.date.month.toString();
-    String year = day.date.year.toString();
+    
 
     int daysinmonth = DateUtils.getDaysInMonth(
-      day.date.year,
-      day.date.month,
+      day.year,
+      day.month,
     );
 
-    String firstday = "$year-$month-01";
-    String lastday = "$year-$month-$daysinmonth";
+    String firstday = SimpleDate(1,day.month,day.year).tostringyyyymmdd();
+    String lastday = SimpleDate(daysinmonth,day.month,day.year).tostringyyyymmdd();
 
 
     return await db.query(
@@ -513,6 +518,10 @@ class SimpleDate {
     this.day = day;
     this.month = month;
     this.year = year;
+  }
+
+  tostringyyyymmdd(){
+     return "$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
   }
 
   nextmonth() {
