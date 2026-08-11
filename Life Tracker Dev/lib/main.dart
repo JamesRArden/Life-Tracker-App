@@ -264,16 +264,29 @@ class TrackerPage extends StatefulWidget {
 
 class _TrackerPageState extends State<TrackerPage> {
   final Color colourscheme = Color.fromARGB(255, 104, 196, 161);
-  final DateTime date = DateTime.now();
+  DateTime today = DateTime.now();
+  late SimpleDate date;
+  
 
- 
+  @override 
+  void initState() {
+  super.initState();
+      date = initiatedate(today);
+  }
 
+  initiatedate(DateTime today){
+    return  SimpleDate(today.day,today.month,today.year);
+
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.trackername,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        title: Text(
+          widget.trackername,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.lightBlueAccent,
       ),
@@ -281,16 +294,40 @@ class _TrackerPageState extends State<TrackerPage> {
         children: [
           Container(
             padding: EdgeInsets.all(20),
-            child: Row(  
-    
+            child: Row(
               children: [
-                    Icon(Icons.arrow_left, size: 50),
-                    const Spacer(),
-                    Text("${date.day}/${date.month}/${date.year}",
-                     style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
-                    const Spacer(),
-                    Icon(Icons.arrow_right, size: 50),
-                ],
+                Container(
+                  child: IconButton(
+                    onPressed: () {
+                      date.prevmonth();
+                      setState(() {});
+                    },
+                    icon: Icon(Icons.arrow_left, size: 50),
+                  ),
+                ),
+
+                const Spacer(),
+
+                Text(
+                  "${date.day}/${date.month}/${date.year}",
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+
+                const Spacer(),
+
+                Container(
+                  child: IconButton(
+                    onPressed: () {
+                      date.nextmonth();
+                      setState(() {});
+                    },
+                    icon: Icon(Icons.arrow_right, size: 50),
+                  ),
+                ),
+              ],
             ),
           ),
           Expanded(
@@ -308,7 +345,10 @@ class _TrackerPageState extends State<TrackerPage> {
     );
   }
 
-  _calanderview(DateTime currentdate, Color colour) {
+
+  
+
+  _calanderview(SimpleDate currentdate, Color colour) {
     int daysinmonth = DateUtils.getDaysInMonth(
       currentdate.year,
       currentdate.month,
@@ -348,7 +388,38 @@ class _TrackerPageState extends State<TrackerPage> {
     );
   }
 
-  _daytapped(day) {
+  _daytapped(day) {}
+}
 
+class SimpleDate  {
+  int day = 0;
+  int month = 0;
+  int year = 0;
+
+  SimpleDate(int day, int month, int year) {
+    this.day = day;
+    this.month = month;
+    this.year = year;
   }
+
+  nextmonth(){
+    if(month != 12){
+      month++;
+    }
+    else{
+      year++;
+      month = 1;
+    }
+  }
+
+  prevmonth(){
+    if(month != 1){
+      month--;
+    }
+    else{
+      year--;
+      month = 12;
+    }
+  }
+
 }
