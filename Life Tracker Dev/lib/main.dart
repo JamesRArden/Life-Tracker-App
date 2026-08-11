@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:lifetrackerapp/database.dart';
 
 void main() {
   runApp(const MyApp());
@@ -132,6 +133,7 @@ class _HomePageState extends State<HomePage> {
             ),
             TextButton(
               onPressed: () async {
+                //stores tracker name
                 items.add(userinput);
                 final prefs = await SharedPreferences.getInstance();
                 prefs.setString("Life-Trackers", jsonEncode(items));
@@ -334,7 +336,7 @@ class _TrackerPageState extends State<TrackerPage> {
                 end: 10,
                 start: 10,
               ),
-              child: _calanderview(date, colourscheme),
+              child: _calanderview(date, colourscheme, widget.trackername),
             ),
           ),
         ],
@@ -342,16 +344,51 @@ class _TrackerPageState extends State<TrackerPage> {
     );
   }
 
-  _calanderview(SimpleDate currentdate, Color colour) {
+  Widget _calanderview(SimpleDate currentdate,Color colour,String trackername,) {
+    List<Map<String, dynamic>> monthrecords = [];
+
+     Future<void> loadrecord() async {
+      monthrecords = await _getrelatedrecords(widget.trackername, currentdate);
+      setState(() {});
+    }
+
+    @override
+    void initState() {
+      super.initState();
+      loadrecord();
+    }
+
+  
+
     int daysinmonth = DateUtils.getDaysInMonth(
       currentdate.year,
       currentdate.month,
     );
 
-    final List<DateTime> days = List.generate(
+/*
+    final List<SimpleDate> days = List.generate(
       daysinmonth,
-      (index) => DateTime(currentdate.year, currentdate.month, index + 1),
+      (index) => SimpleDate(currentdate.year, currentdate.month, index + 1),
     );
+*/
+   
+    final List<boxcolour> days = List.generate(
+      daysinmonth,
+      (index) {
+        SimpleDate day = SimpleDate(  index + 1, currentdate.month,currentdate.year);
+        
+        
+       
+        for (var row in monthrecords) {
+          if(row["date"] == day){
+              return boxcolour(day, row["value"]);
+          }
+        }
+
+        return boxcolour(day, -1);
+      } 
+    );
+
 
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -366,7 +403,7 @@ class _TrackerPageState extends State<TrackerPage> {
         final squarecolour = colour;
 
         return GestureDetector(
-          onTap: () => _daytapped(day),
+          onTap: () => _daytapped(day, trackername),
           child: Container(
             decoration: BoxDecoration(
               color: squarecolour,
@@ -374,7 +411,7 @@ class _TrackerPageState extends State<TrackerPage> {
               border: Border.all(color: Colors.grey.shade300),
             ),
             child: Center(
-              child: Text('${day.day}', style: const TextStyle(fontSize: 16)),
+              child: Text('${day.date.day}', style: const TextStyle(fontSize: 16)),
             ),
           ),
         );
@@ -382,8 +419,14 @@ class _TrackerPageState extends State<TrackerPage> {
     );
   }
 
-  _daytapped(day) {
-    double daywellness = 5;
+  _daytapped(day, trackername) {
+    double daywellness = 1;
+
+    
+    if(day.success != -1){
+      daywellness = day.success;
+    }
+ 
 
     showDialog(
       context: context,
@@ -391,10 +434,11 @@ class _TrackerPageState extends State<TrackerPage> {
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             return AlertDialog(
-              title: Text("Success Meter"),
+              title: Center(child: Text("Success Meter")),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Center(child: Text(daywellness.toString())),
                   Slider(
                     value: daywellness,
                     min: 1,
@@ -406,13 +450,56 @@ class _TrackerPageState extends State<TrackerPage> {
                       });
                     },
                   ),
-                  IconButton(icon: Icon(Icons.check), onPressed: () {}),
+                  IconButton(
+                    icon: Icon(Icons.check),
+                    onPressed: () {
+                      _addrecord(trackername,daywellness,day );
+                      Navigator.pop(context);
+                    },
+                  ),
                 ],
               ),
             );
           },
         );
       },
+    );
+  }
+ 
+  _addrecord(trackername, daywellness, dateof) async {
+    final db = await AppDatabase.database;
+
+    String day = dateof.date.day.toString();
+    String month = dateof.date.month.toString();
+    String year = dateof.date.year.toString();
+    String inputdate = "$year-$month-$day";
+    await db.insert('daily_entries', {
+      'date': inputdate,
+      'tracker': trackername,
+      'value': daywellness,
+    });
+  }
+
+  _getrelatedrecords(trackername, day) async {
+    final db = await AppDatabase.database;
+
+    String month = day.date.month.toString();
+    String year = day.date.year.toString();
+
+    int daysinmonth = DateUtils.getDaysInMonth(
+      day.date.year,
+      day.date.month,
+    );
+
+    String firstday = "$year-$month-01";
+    String lastday = "$year-$month-$daysinmonth";
+
+
+    return await db.query(
+      'daily_entries',
+      where: 'date BETWEEN ? AND ? AND tracker LIKE ?',
+      whereArgs: [firstday, lastday, trackername],
+      orderBy: 'date ASC',
     );
   }
 }
@@ -446,3 +533,14 @@ class SimpleDate {
     }
   }
 }
+
+class boxcolour {
+  SimpleDate date = SimpleDate(0, 0, 0);
+  int success = 0;
+
+  boxcolour(SimpleDate date, int success) {
+    this.date = date;
+    this.success = success;
+  }
+}
+
