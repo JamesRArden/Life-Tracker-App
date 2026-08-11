@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Add Items Example"),
+        title: const Text("Life Trackers"),
         backgroundColor: Colors.lightBlueAccent,
       ),
 
@@ -266,20 +266,17 @@ class _TrackerPageState extends State<TrackerPage> {
   final Color colourscheme = Color.fromARGB(255, 104, 196, 161);
   DateTime today = DateTime.now();
   late SimpleDate date;
-  
 
-  @override 
+  @override
   void initState() {
-  super.initState();
-      date = initiatedate(today);
+    super.initState();
+    date = initiatedate(today);
   }
 
-  initiatedate(DateTime today){
-    return  SimpleDate(today.day,today.month,today.year);
-
+  initiatedate(DateTime today) {
+    return SimpleDate(today.day, today.month, today.year);
   }
 
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -309,7 +306,7 @@ class _TrackerPageState extends State<TrackerPage> {
                 const Spacer(),
 
                 Text(
-                  "${date.day}/${date.month}/${date.year}",
+                  "${date.month}/${date.year}",
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
@@ -344,9 +341,6 @@ class _TrackerPageState extends State<TrackerPage> {
       ),
     );
   }
-
-
-  
 
   _calanderview(SimpleDate currentdate, Color colour) {
     int daysinmonth = DateUtils.getDaysInMonth(
@@ -388,10 +382,34 @@ class _TrackerPageState extends State<TrackerPage> {
     );
   }
 
-  _daytapped(day) {}
+  _daytapped(day) {
+    double daywellness = 5;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Success Meter"),
+          content: Column(
+              mainAxisSize: MainAxisSize.min,
+            children: [
+              Slider(
+                value: daywellness,
+                min: 1,
+                max: 10,
+                divisions: 9,
+                onChanged: (newValue) {},
+              ),
+              IconButton(icon: Icon(Icons.check), onPressed: () {}),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
-class SimpleDate  {
+class SimpleDate {
   int day = 0;
   int month = 0;
   int year = 0;
@@ -402,24 +420,21 @@ class SimpleDate  {
     this.year = year;
   }
 
-  nextmonth(){
-    if(month != 12){
+  nextmonth() {
+    if (month != 12) {
       month++;
-    }
-    else{
+    } else {
       year++;
       month = 1;
     }
   }
 
-  prevmonth(){
-    if(month != 1){
+  prevmonth() {
+    if (month != 1) {
       month--;
-    }
-    else{
+    } else {
       year--;
       month = 12;
     }
   }
-
 }
