@@ -22,7 +22,7 @@ class AppDatabase {
           CREATE TABLE daily_entries (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             date TEXT,
-            tracker TEXT unique,
+            tracker TEXT,
             value INTEGER
           )
         ''');
