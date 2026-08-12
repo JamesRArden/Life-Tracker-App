@@ -524,7 +524,7 @@ class _TrackerPageState extends State<TrackerPage> {
       'tracker': trackername,
       'value': daywellness,
     });
-
+ 
    
   }
 
