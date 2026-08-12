@@ -524,6 +524,8 @@ class _TrackerPageState extends State<TrackerPage> {
       'tracker': trackername,
       'value': daywellness,
     });
+
+   
   }
 
   _replacerecord(trackername, daywellness, day) async {
