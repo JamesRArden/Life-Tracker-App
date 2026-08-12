@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> LoadStoredTrackers() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString("Life-Trackers");
-
+    
     setState(() {
       if (saved == null) {
         items = [];
@@ -273,8 +273,19 @@ class _TrackerPageState extends State<TrackerPage> {
   void initState() {
     super.initState();
     date = initiatedate(today);
+    loadrecord();
   }
 
+ 
+  List<Map<String, dynamic>> monthrecords = [];
+
+  Future<void> loadrecord() async {
+    print("heelloo");
+    monthrecords = await _getrelatedrecords(widget.trackername, date);
+    setState(() {});
+  }
+
+    
   initiatedate(DateTime today) {
     return SimpleDate(today.day, today.month, today.year);
   }
@@ -336,7 +347,7 @@ class _TrackerPageState extends State<TrackerPage> {
                 end: 10,
                 start: 10,
               ),
-              child: _calanderview(date, colourscheme, widget.trackername),
+              child: _calanderview(monthrecords,date, colourscheme, widget.trackername),
             ),
           ),
         ],
@@ -344,41 +355,25 @@ class _TrackerPageState extends State<TrackerPage> {
     );
   }
 
-  Widget _calanderview(SimpleDate currentdate,Color colour,String trackername,) {
-    List<Map<String, dynamic>> monthrecords = [];
-
-     Future<void> loadrecord() async {
-      monthrecords = await _getrelatedrecords(widget.trackername, currentdate);
-      setState(() {});
-      print("reached1");
-      print(monthrecords);
-    }
-
-    @override
-    void initState() {
-      super.initState();
-      loadrecord();
-    }
-
+   _calanderview(monthrecords,SimpleDate currentdate,Color colour,String trackername,) {
   
+
+
+
 
     int daysinmonth = DateUtils.getDaysInMonth(
       currentdate.year,
       currentdate.month,
     );
 
-/*
-    final List<SimpleDate> days = List.generate(
-      daysinmonth,
-      (index) => SimpleDate(currentdate.year, currentdate.month, index + 1),
-    );
-*/
-   
+       print("returned matchingrecords");
+      print(monthrecords);
+
     final List<boxcolour> days = List.generate(
       daysinmonth,
       (index) {
         SimpleDate day = SimpleDate(  index + 1, currentdate.month,currentdate.year);
-        
+   
         
        
         for (var row in monthrecords) {
@@ -390,6 +385,14 @@ class _TrackerPageState extends State<TrackerPage> {
         return boxcolour(day, -1);
       } 
     );
+
+  print("days");
+  
+  for(var obj in days){
+    print(obj.date.tostringyyyymmdd());
+    print(obj.success);
+
+  }
 
 
     return GridView.builder(
@@ -426,7 +429,7 @@ class _TrackerPageState extends State<TrackerPage> {
 
     
     if(day.success != -1){
-      daywellness = day.success;
+      daywellness = (day.success).toDouble();
     }
  
 
@@ -455,7 +458,17 @@ class _TrackerPageState extends State<TrackerPage> {
                   IconButton(
                     icon: Icon(Icons.check),
                     onPressed: () {
-                      _addrecord(trackername,daywellness,day );
+
+                      if(day.success != -1){
+                         _replacerecord(trackername,daywellness,day );
+
+                      }
+                      else{
+                          _addrecord(trackername,daywellness,day );
+
+                      }
+                      loadrecord();
+                      setState(() {});
                       Navigator.pop(context);
                     },
                   ),
@@ -478,18 +491,28 @@ class _TrackerPageState extends State<TrackerPage> {
       'value': daywellness,
     });
 
-  final records =  await db.query(
+  }
+
+  _replacerecord(trackername,daywellness,day ) async{
+      final db = await AppDatabase.database;
+
+   
+    await db.update (
       'daily_entries',
+      {
+      'tracker': trackername,
+      'value': daywellness,
+      'date': day.date.tostringyyyymmdd(),
+      }
     );
 
-    print("reached1");
-    print(records);
   }
+
 
   _getrelatedrecords(trackername, day) async {
     final db = await AppDatabase.database;
 
-    
+   
 
     int daysinmonth = DateUtils.getDaysInMonth(
       day.year,
@@ -499,13 +522,17 @@ class _TrackerPageState extends State<TrackerPage> {
     String firstday = SimpleDate(1,day.month,day.year).tostringyyyymmdd();
     String lastday = SimpleDate(daysinmonth,day.month,day.year).tostringyyyymmdd();
 
-
-    return await db.query(
+    
+     final records = await db.query(
       'daily_entries',
       where: 'date BETWEEN ? AND ? AND tracker LIKE ?',
       whereArgs: [firstday, lastday, trackername],
       orderBy: 'date ASC',
     );
+
+    print("matching records");
+    print(records);
+    return records;
   }
 }
 
