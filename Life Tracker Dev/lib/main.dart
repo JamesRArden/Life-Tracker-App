@@ -134,17 +134,7 @@ class _HomePageState extends State<HomePage> {
             TextButton(
               onPressed: () async {
                 //stores tracker name
-                items.add(userinput);
-                final prefs = await SharedPreferences.getInstance();
-                prefs.setString("Life-Trackers", jsonEncode(items));
-
-                setState(() {});
-
-                if (!mounted) {
-                  return;
-                } else {
-                  Navigator.pop(context);
-                }
+                _addtracker(userinput);
               },
               child: Text("Add"),
             ),
@@ -152,6 +142,35 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+_addtracker(userinput) async {
+    items.add(userinput);
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString("Life-Trackers", jsonEncode(items));
+
+    
+    final db = await AppDatabase.database;
+ 
+    final basecolour1 = (Colors.blue).value;
+    final basecolour2 = (Colors.purpleAccent).value;
+
+
+    await db.insert('tracker_meta_data', {
+        'tracker' : userinput,
+        'colour1' : basecolour1,
+        'colour2' : basecolour2,
+    });
+
+  
+    setState(() {});
+
+    if (!mounted) {
+      return;
+    } else {
+      Navigator.pop(context);
+    }
+
   }
 
   _trackeredit(item) {
@@ -341,11 +360,7 @@ class _TrackerPageState extends State<TrackerPage> {
             ),
           ),
           Container(
-            margin: EdgeInsets.only(
-              top: 5, 
-              left: 10, 
-              right: 10, 
-              bottom: 5),
+            margin: EdgeInsets.only(top: 5, left: 10, right: 10, bottom: 5),
             child: Row(
               children: [
                 Container(child: Text("Worst")),
@@ -524,8 +539,6 @@ class _TrackerPageState extends State<TrackerPage> {
       'tracker': trackername,
       'value': daywellness,
     });
- 
-   
   }
 
   _replacerecord(trackername, daywellness, day) async {

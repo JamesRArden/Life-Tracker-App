@@ -27,12 +27,13 @@ class AppDatabase {
           )
         ''');
 
-           await db.execute('''
-              CREATE TABLE tracker_meta_data
+        await db.execute('''
+              CREATE TABLE tracker_meta_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tracker TEXT unique,
-                colour1 TEXT,
-                colour2 TEXT,
+                colour1 INTEGER,
+                colour2 INTEGER
+                )
           ''');
       },
     );
