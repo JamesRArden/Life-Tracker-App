@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> LoadStoredTrackers() async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString("Life-Trackers");
-    
+
     setState(() {
       if (saved == null) {
         items = [];
@@ -276,7 +276,6 @@ class _TrackerPageState extends State<TrackerPage> {
     loadrecord();
   }
 
- 
   List<Map<String, dynamic>> monthrecords = [];
 
   Future<void> loadrecord() async {
@@ -285,7 +284,6 @@ class _TrackerPageState extends State<TrackerPage> {
     setState(() {});
   }
 
-    
   initiatedate(DateTime today) {
     return SimpleDate(today.day, today.month, today.year);
   }
@@ -342,6 +340,32 @@ class _TrackerPageState extends State<TrackerPage> {
               ],
             ),
           ),
+          Container(
+            margin: EdgeInsets.only(
+              top: 5, 
+              left: 10, 
+              right: 10, 
+              bottom: 5),
+            child: Row(
+              children: [
+                Container(child: Text("Worst")),
+                const Spacer(),
+                Container(child: Text("Best")),
+              ],
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.all(20),
+            margin: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              gradient: LinearGradient(
+                colors: [Colors.blue, Colors.purpleAccent],
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+            ),
+          ),
           Expanded(
             child: Padding(
               padding: EdgeInsetsGeometry.directional(
@@ -349,7 +373,12 @@ class _TrackerPageState extends State<TrackerPage> {
                 end: 10,
                 start: 10,
               ),
-              child: _calanderview(monthrecords,date, colourscheme, widget.trackername),
+              child: _calanderview(
+                monthrecords,
+                date,
+                colourscheme,
+                widget.trackername,
+              ),
             ),
           ),
         ],
@@ -357,46 +386,42 @@ class _TrackerPageState extends State<TrackerPage> {
     );
   }
 
-   _calanderview(monthrecords,SimpleDate currentdate,Color colour,String trackername,) {
-  
-
+  _calanderview(
+    monthrecords,
+    SimpleDate currentdate,
+    Color colour,
+    String trackername,
+  ) {
     int daysinmonth = DateUtils.getDaysInMonth(
       currentdate.year,
       currentdate.month,
     );
 
-       print("returned matchingrecords");
-      print(monthrecords);
+    print("returned matchingrecords");
+    print(monthrecords);
 
+    final List<boxcolour> days = List.generate(daysinmonth, (index) {
+      SimpleDate day = SimpleDate(
+        index + 1,
+        currentdate.month,
+        currentdate.year,
+      );
 
-
-    final List<boxcolour> days = List.generate(
-      daysinmonth,
-      (index) {
-        SimpleDate day = SimpleDate(  index + 1, currentdate.month,currentdate.year);
-   
-        
-       
-        for (var row in monthrecords) {
-          if(row["date"] == day.tostringyyyymmdd()){
-              return boxcolour(day, row["value"]);
-          }
+      for (var row in monthrecords) {
+        if (row["date"] == day.tostringyyyymmdd()) {
+          return boxcolour(day, row["value"]);
         }
+      }
 
-        return boxcolour(day, -1);
-      } 
-    );
+      return boxcolour(day, -1);
+    });
 
-  
-  
-  print("days");
-  
-  for(var obj in days){
-    print(obj.date.tostringyyyymmdd());
-    print(obj.success);
+    print("days");
 
-  }
-
+    for (var obj in days) {
+      print(obj.date.tostringyyyymmdd());
+      print(obj.success);
+    }
 
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -410,28 +435,29 @@ class _TrackerPageState extends State<TrackerPage> {
         final day = days[index];
         final squarecolour = colour;
 
-        
-         double strength = 1;
-         Color colour1 = const Color.fromARGB(255, 233, 192, 168);
-         Color colour2 =  const Color.fromARGB(255, 233, 192, 168);
+        double strength = 1;
+        Color colour1 = const Color.fromARGB(255, 233, 192, 168);
+        Color colour2 = const Color.fromARGB(255, 233, 192, 168);
 
-        if(day.success != -1){
-           strength = (day.success) / 10;
-           colour1 = Colors.blue;
-           colour2 =  Colors.purpleAccent;
+        if (day.success != -1) {
+          strength = (day.success) / 10;
+          colour1 = Colors.blue;
+          colour2 = Colors.purpleAccent;
         }
-    
 
         return GestureDetector(
           onTap: () => _daytapped(day, trackername),
           child: Container(
             decoration: BoxDecoration(
-              color: Color.lerp(colour1,colour2, strength),
+              color: Color.lerp(colour1, colour2, strength),
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: Colors.grey.shade300),
             ),
             child: Center(
-              child: Text('${day.date.day}', style: const TextStyle(fontSize: 16)),
+              child: Text(
+                '${day.date.day}',
+                style: const TextStyle(fontSize: 16),
+              ),
             ),
           ),
         );
@@ -442,11 +468,9 @@ class _TrackerPageState extends State<TrackerPage> {
   _daytapped(day, trackername) {
     double daywellness = 1;
 
-    
-    if(day.success != -1){
+    if (day.success != -1) {
       daywellness = (day.success).toDouble();
     }
- 
 
     showDialog(
       context: context,
@@ -473,14 +497,10 @@ class _TrackerPageState extends State<TrackerPage> {
                   IconButton(
                     icon: Icon(Icons.check),
                     onPressed: () {
-
-                      if(day.success != -1){
-                         _replacerecord(trackername,daywellness,day );
-
-                      }
-                      else{
-                          _addrecord(trackername,daywellness,day );
-
+                      if (day.success != -1) {
+                        _replacerecord(trackername, daywellness, day);
+                      } else {
+                        _addrecord(trackername, daywellness, day);
                       }
                       loadrecord();
                       setState(() {});
@@ -495,50 +515,40 @@ class _TrackerPageState extends State<TrackerPage> {
       },
     );
   }
- 
+
   _addrecord(trackername, daywellness, day) async {
     final db = await AppDatabase.database;
 
-   
     await db.insert('daily_entries', {
       'date': day.date.tostringyyyymmdd(),
       'tracker': trackername,
       'value': daywellness,
     });
-
   }
 
-  _replacerecord(trackername,daywellness,day ) async{
-      final db = await AppDatabase.database;
+  _replacerecord(trackername, daywellness, day) async {
+    final db = await AppDatabase.database;
 
-   
-    await db.update (
-      'daily_entries',
-      {
+    await db.update('daily_entries', {
       'tracker': trackername,
       'value': daywellness,
       'date': day.date.tostringyyyymmdd(),
-      }
-    );
-
+    });
   }
-
 
   _getrelatedrecords(trackername, day) async {
     final db = await AppDatabase.database;
 
-   
+    int daysinmonth = DateUtils.getDaysInMonth(day.year, day.month);
 
-    int daysinmonth = DateUtils.getDaysInMonth(
-      day.year,
+    String firstday = SimpleDate(1, day.month, day.year).tostringyyyymmdd();
+    String lastday = SimpleDate(
+      daysinmonth,
       day.month,
-    );
+      day.year,
+    ).tostringyyyymmdd();
 
-    String firstday = SimpleDate(1,day.month,day.year).tostringyyyymmdd();
-    String lastday = SimpleDate(daysinmonth,day.month,day.year).tostringyyyymmdd();
-
-    
-     final records = await db.query(
+    final records = await db.query(
       'daily_entries',
       where: 'date BETWEEN ? AND ? AND tracker LIKE ?',
       whereArgs: [firstday, lastday, trackername],
@@ -562,8 +572,8 @@ class SimpleDate {
     this.year = year;
   }
 
-  tostringyyyymmdd(){
-     return "$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
+  tostringyyyymmdd() {
+    return "$year-${month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}";
   }
 
   nextmonth() {
@@ -594,4 +604,3 @@ class boxcolour {
     this.success = success;
   }
 }
-
