@@ -310,6 +310,7 @@ class _TrackerPageState extends State<TrackerPage> {
                   child: IconButton(
                     onPressed: () {
                       date.prevmonth();
+                      loadrecord();
                       setState(() {});
                     },
                     icon: Icon(Icons.arrow_left, size: 50),
@@ -332,6 +333,7 @@ class _TrackerPageState extends State<TrackerPage> {
                   child: IconButton(
                     onPressed: () {
                       date.nextmonth();
+                      loadrecord();
                       setState(() {});
                     },
                     icon: Icon(Icons.arrow_right, size: 50),
@@ -358,9 +360,6 @@ class _TrackerPageState extends State<TrackerPage> {
    _calanderview(monthrecords,SimpleDate currentdate,Color colour,String trackername,) {
   
 
-
-
-
     int daysinmonth = DateUtils.getDaysInMonth(
       currentdate.year,
       currentdate.month,
@@ -368,6 +367,8 @@ class _TrackerPageState extends State<TrackerPage> {
 
        print("returned matchingrecords");
       print(monthrecords);
+
+
 
     final List<boxcolour> days = List.generate(
       daysinmonth,
@@ -386,6 +387,8 @@ class _TrackerPageState extends State<TrackerPage> {
       } 
     );
 
+  
+  
   print("days");
   
   for(var obj in days){
@@ -407,11 +410,23 @@ class _TrackerPageState extends State<TrackerPage> {
         final day = days[index];
         final squarecolour = colour;
 
+        
+         double strength = 1;
+         Color colour1 = const Color.fromARGB(255, 233, 192, 168);
+         Color colour2 =  const Color.fromARGB(255, 233, 192, 168);
+
+        if(day.success != -1){
+           strength = (day.success) / 10;
+           colour1 = Colors.blue;
+           colour2 =  Colors.purpleAccent;
+        }
+    
+
         return GestureDetector(
           onTap: () => _daytapped(day, trackername),
           child: Container(
             decoration: BoxDecoration(
-              color: squarecolour,
+              color: Color.lerp(colour1,colour2, strength),
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: Colors.grey.shade300),
             ),
