@@ -293,10 +293,21 @@ class _TrackerPageState extends State<TrackerPage> {
   }
 
   List<Map<String, dynamic>> monthrecords = [];
+  List<Map<String, dynamic>> trackermetadata = [];
+
+  Color worst = Colors.blue;
+  Color best = Colors.purpleAccent;
 
   Future<void> loadrecord() async {
     print("heelloo");
     monthrecords = await _getrelatedrecords(widget.trackername, date);
+    trackermetadata = await _gettrackermetadata(widget.trackername);
+
+    final trackermetadatarecord = trackermetadata[0];
+
+    best = Color((trackermetadatarecord['colour1'] as int));
+    worst = Color((trackermetadatarecord['colour2'] as int));
+
     setState(() {});
   }
 
@@ -394,7 +405,7 @@ class _TrackerPageState extends State<TrackerPage> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(6),
                 gradient: LinearGradient(
-                  colors: [Colors.blue, Colors.purpleAccent],
+                  colors: [worst, best],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
@@ -410,7 +421,8 @@ class _TrackerPageState extends State<TrackerPage> {
                 child: _calanderview(
                   monthrecords,
                   date,
-                  colourscheme,
+                  worst,
+                  best,
                   widget.trackername,
                 ),
               ),
@@ -419,6 +431,18 @@ class _TrackerPageState extends State<TrackerPage> {
         ),
       ),
     );
+  }
+
+  _gettrackermetadata(trackername) async {
+    final db = await AppDatabase.database;
+
+    final trackermetadata = await db.query(
+      'tracker_meta_data',
+      where: 'tracker like ? ',
+      whereArgs: [trackername],
+    );
+
+    return trackermetadata;
   }
 
   _changecoloursmenue(trackername) async {
@@ -437,8 +461,7 @@ class _TrackerPageState extends State<TrackerPage> {
 
     String colour_replaced = "colour1";
     Color selected_colour_colour = best;
-    
- 
+
     showDialog(
       context: context,
       builder: (context) {
@@ -467,7 +490,12 @@ class _TrackerPageState extends State<TrackerPage> {
                     children: [
                       InkWell(
                         onTap: () {
-                          colour_replaced = "colour2";
+                          setStateDialog(() {
+                            colour_replaced = "colour2";
+                            selected_colour_colour = worst;
+                          });
+
+                          ;
                         },
                         child: Container(
                           padding: EdgeInsets.all(10),
@@ -489,11 +517,14 @@ class _TrackerPageState extends State<TrackerPage> {
 
                       InkWell(
                         onTap: () {
-                          colour_replaced = "colour1";
+                          setStateDialog(() {
+                            colour_replaced = "colour1";
+                            selected_colour_colour = best;
+                          });
                         },
                         child: Container(
                           padding: EdgeInsets.all(10),
-                             margin: EdgeInsets.only(
+                          margin: EdgeInsets.only(
                             top: 5,
                             left: 5,
                             right: 5,
@@ -523,12 +554,24 @@ class _TrackerPageState extends State<TrackerPage> {
 
                   Container(
                     child: IconButton(
-                      onPressed: (){
-                        _updatetrackercolour(trackername,colour_replaced,selected_colour_colour);
-                      }, 
-                      icon: Icon(Icons.done)),
+                      onPressed: () {
+                        _updatetrackercolour(
+                          trackername,
+                          colour_replaced,
+                          selected_colour_colour.value,
+                        );
+                        setStateDialog(() {
+                          if (colour_replaced == "colour1") {
+                            best = selected_colour_colour;
+                          } else {
+                            worst = selected_colour_colour;
+                          }
+                        });
+                      },
+                      icon: Icon(Icons.done),
+                    ),
                   ),
-                  ],
+                ],
               ),
             );
           },
@@ -537,14 +580,34 @@ class _TrackerPageState extends State<TrackerPage> {
     );
   }
 
-  _updatetrackercolour(trackername,replacedcolour,newcolour){
+  _updatetrackercolour(trackername, replacedcolour, newcolour) async {
+    final db = await AppDatabase.database;
 
+    if (replacedcolour == "colour1") {
+      await db.update(
+        'tracker_meta_data',
+        {'colour1': newcolour},
+        where: 'tracker = ?',
+        whereArgs: [trackername],
+      );
+    } else {
+      await db.update(
+        'tracker_meta_data',
+        {'colour2': newcolour},
+        where: 'tracker = ?',
+        whereArgs: [trackername],
+      );
+    }
+
+    loadrecord();
+    setState(() {});
   }
 
   _calanderview(
     monthrecords,
     SimpleDate currentdate,
-    Color colour,
+    Color colourworst,
+    Color colourbest,
     String trackername,
   ) {
     int daysinmonth = DateUtils.getDaysInMonth(
@@ -588,7 +651,6 @@ class _TrackerPageState extends State<TrackerPage> {
       itemCount: daysinmonth,
       itemBuilder: (context, index) {
         final day = days[index];
-        final squarecolour = colour;
 
         double strength = 1;
         Color colour1 = const Color.fromARGB(255, 233, 192, 168);
@@ -596,15 +658,15 @@ class _TrackerPageState extends State<TrackerPage> {
 
         if (day.success != -1) {
           strength = (day.success) / 10;
-          colour1 = Colors.blue;
-          colour2 = Colors.purpleAccent;
+          colour2 = colourworst;
+          colour1 = colourbest;
         }
 
         return GestureDetector(
           onTap: () => _daytapped(day, trackername),
           child: Container(
             decoration: BoxDecoration(
-              color: Color.lerp(colour1, colour2, strength),
+              color: Color.lerp(colour2, colour1, strength),
               borderRadius: BorderRadius.circular(6),
               border: Border.all(color: Colors.grey.shade300),
             ),
@@ -684,11 +746,12 @@ class _TrackerPageState extends State<TrackerPage> {
   _replacerecord(trackername, daywellness, day) async {
     final db = await AppDatabase.database;
 
-    await db.update('daily_entries', {
-      'tracker': trackername,
-      'value': daywellness,
-      'date': day.date.tostringyyyymmdd(),
-    });
+    await db.update(
+      'daily_entries',
+      {'value': daywellness},
+      where: 'date = ?',
+      whereArgs: [day.date.tostringyyyymmdd()],
+    );
   }
 
   _getrelatedrecords(trackername, day) async {
