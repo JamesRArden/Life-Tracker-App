@@ -144,25 +144,22 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-_addtracker(userinput) async {
+  _addtracker(userinput) async {
     items.add(userinput);
     final prefs = await SharedPreferences.getInstance();
     prefs.setString("Life-Trackers", jsonEncode(items));
 
-    
     final db = await AppDatabase.database;
- 
+
     final basecolour1 = (Colors.blue).value;
     final basecolour2 = (Colors.purpleAccent).value;
 
-
     await db.insert('tracker_meta_data', {
-        'tracker' : userinput,
-        'colour1' : basecolour1,
-        'colour2' : basecolour2,
+      'tracker': userinput,
+      'colour1': basecolour1,
+      'colour2': basecolour2,
     });
 
-  
     setState(() {});
 
     if (!mounted) {
@@ -170,7 +167,6 @@ _addtracker(userinput) async {
     } else {
       Navigator.pop(context);
     }
-
   }
 
   _trackeredit(item) {
@@ -310,107 +306,199 @@ class _TrackerPageState extends State<TrackerPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-  onHorizontalDragEnd: (details) {
-    if (details.primaryVelocity! < 0) { //negative velo so left swipe
+      onHorizontalDragEnd: (details) {
+        if (details.primaryVelocity! < 0) {
+          //negative velo so left swipe
+          date.nextmonth();
+          loadrecord();
+          setState(() {});
+        } else {
+          //positive velo so right swipe
           date.prevmonth();
-        loadrecord();
-        setState(() {});
-    } else { //positive velo so right swipe
-        date.nextmonth();
-        loadrecord();
-        setState(() {});
-    }
-  },
-  child: Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.trackername,
-          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          loadrecord();
+          setState(() {});
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            widget.trackername,
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            IconButton(
+              onPressed: () {
+                _changecoloursmenue(widget.trackername);
+              },
+              icon: Icon(Icons.menu),
+            ),
+          ],
+          backgroundColor: Colors.lightBlueAccent,
         ),
-        backgroundColor: Colors.lightBlueAccent,
+        body: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  Container(
+                    child: IconButton(
+                      onPressed: () {
+                        date.prevmonth();
+                        loadrecord();
+                        setState(() {});
+                      },
+                      icon: Icon(Icons.arrow_left, size: 50),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  Text(
+                    "${date.month}/${date.year}",
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  Container(
+                    child: IconButton(
+                      onPressed: () {
+                        date.nextmonth();
+                        loadrecord();
+                        setState(() {});
+                      },
+                      icon: Icon(Icons.arrow_right, size: 50),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 5, left: 10, right: 10, bottom: 5),
+              child: Row(
+                children: [
+                  Container(child: Text("Worst")),
+                  const Spacer(),
+                  Container(child: Text("Best")),
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(20),
+              margin: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(6),
+                gradient: LinearGradient(
+                  colors: [Colors.blue, Colors.purpleAccent],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsetsGeometry.directional(
+                  top: 10,
+                  end: 10,
+                  start: 10,
+                ),
+                child: _calanderview(
+                  monthrecords,
+                  date,
+                  colourscheme,
+                  widget.trackername,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
-      body: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(20),
-            child: Row(
-              children: [
-                Container(
-                  child: IconButton(
-                    onPressed: () {
-                      date.prevmonth();
-                      loadrecord();
-                      setState(() {});
-                    },
-                    icon: Icon(Icons.arrow_left, size: 50),
+    );
+  }
+
+  _changecoloursmenue(trackername) async {
+    final db = await AppDatabase.database;
+
+    final trackermetadata = await db.query(
+      'tracker_meta_data',
+      where: 'tracker like ? ',
+      whereArgs: [trackername],
+    );
+
+    final record = trackermetadata[0];
+
+    Color colour1 = Color((record['colour1'] as int));
+    Color colour2 = Color((record['colour2'] as int));
+
+    Color selected_colour = colour1;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              content: Column(
+                children: [
+                  Container(
+                    child: Text(
+                      "Change Tracker Colours",
+                      style: TextStyle(
+                        fontSize: 24, // change this
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    padding: EdgeInsets.only(
+                      top: 5,
+                      left: 5,
+                      right: 5,
+                      bottom: 15,
+                    ),
                   ),
-                ),
 
-                const Spacer(),
-
-                Text(
-                  "${date.month}/${date.year}",
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          selected_colour = colour1;
+                          setStateDialog() {}
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: colour1,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text("Worst Colour"),
+                        ),
+                      ),
+                      const Spacer(),
+                      InkWell(
+                        onTap: () {
+                          selected_colour = colour2;
+                          setStateDialog() {}
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            color: colour2,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text("Best Colour"),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-
-                const Spacer(),
-
-                Container(
-                  child: IconButton(
-                    onPressed: () {
-                      date.nextmonth();
-                      loadrecord();
-                      setState(() {});
-                    },
-                    icon: Icon(Icons.arrow_right, size: 50),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(top: 5, left: 10, right: 10, bottom: 5),
-            child: Row(
-              children: [
-                Container(child: Text("Worst")),
-                const Spacer(),
-                Container(child: Text("Best")),
-              ],
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(20),
-            margin: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6),
-              gradient: LinearGradient(
-                colors: [Colors.blue, Colors.purpleAccent],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
+                ],
               ),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsetsGeometry.directional(
-                top: 10,
-                end: 10,
-                start: 10,
-              ),
-              child: _calanderview(
-                monthrecords,
-                date,
-                colourscheme,
-                widget.trackername,
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
+            );
+          },
+        );
+      },
     );
   }
 
