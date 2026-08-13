@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:lifetrackerapp/database.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 void main() {
   runApp(const MyApp());
@@ -431,11 +432,13 @@ class _TrackerPageState extends State<TrackerPage> {
 
     final record = trackermetadata[0];
 
-    Color colour1 = Color((record['colour1'] as int));
-    Color colour2 = Color((record['colour2'] as int));
+    Color best = Color((record['colour1'] as int));
+    Color worst = Color((record['colour2'] as int));
 
-    Color selected_colour = colour1;
-
+    String colour_replaced = "colour1";
+    Color selected_colour_colour = best;
+    
+ 
     showDialog(
       context: context,
       builder: (context) {
@@ -453,10 +456,10 @@ class _TrackerPageState extends State<TrackerPage> {
                       ),
                     ),
                     padding: EdgeInsets.only(
-                      top: 5,
+                      top: 0,
                       left: 5,
                       right: 5,
-                      bottom: 15,
+                      bottom: 5,
                     ),
                   ),
 
@@ -464,28 +467,40 @@ class _TrackerPageState extends State<TrackerPage> {
                     children: [
                       InkWell(
                         onTap: () {
-                          selected_colour = colour1;
-                          setStateDialog() {}
+                          colour_replaced = "colour2";
                         },
                         child: Container(
-                          padding: EdgeInsets.all(5),
+                          padding: EdgeInsets.all(10),
+                          margin: EdgeInsets.only(
+                            top: 5,
+                            left: 5,
+                            right: 5,
+                            bottom: 5,
+                          ),
                           decoration: BoxDecoration(
-                            color: colour1,
+                            color: worst,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text("Worst Colour"),
                         ),
                       ),
+
                       const Spacer(),
+
                       InkWell(
                         onTap: () {
-                          selected_colour = colour2;
-                          setStateDialog() {}
+                          colour_replaced = "colour1";
                         },
                         child: Container(
-                          padding: EdgeInsets.all(5),
+                          padding: EdgeInsets.all(10),
+                             margin: EdgeInsets.only(
+                            top: 5,
+                            left: 5,
+                            right: 5,
+                            bottom: 5,
+                          ),
                           decoration: BoxDecoration(
-                            color: colour2,
+                            color: best,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text("Best Colour"),
@@ -493,13 +508,37 @@ class _TrackerPageState extends State<TrackerPage> {
                       ),
                     ],
                   ),
-                ],
+
+                  ColorPicker(
+                    pickerColor: selected_colour_colour,
+                    onColorChanged: (color) {
+                      setStateDialog(() {
+                        selected_colour_colour = color;
+                      });
+                    },
+                    paletteType: PaletteType.hsv,
+                    enableAlpha: false,
+                    displayThumbColor: true,
+                  ),
+
+                  Container(
+                    child: IconButton(
+                      onPressed: (){
+                        _updatetrackercolour(trackername,colour_replaced,selected_colour_colour);
+                      }, 
+                      icon: Icon(Icons.done)),
+                  ),
+                  ],
               ),
             );
           },
         );
       },
     );
+  }
+
+  _updatetrackercolour(trackername,replacedcolour,newcolour){
+
   }
 
   _calanderview(
