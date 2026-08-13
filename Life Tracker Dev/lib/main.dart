@@ -309,7 +309,19 @@ class _TrackerPageState extends State<TrackerPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return GestureDetector(
+  onHorizontalDragEnd: (details) {
+    if (details.primaryVelocity! < 0) { //negative velo so left swipe
+          date.prevmonth();
+        loadrecord();
+        setState(() {});
+    } else { //positive velo so right swipe
+        date.nextmonth();
+        loadrecord();
+        setState(() {});
+    }
+  },
+  child: Scaffold(
       appBar: AppBar(
         title: Text(
           widget.trackername,
@@ -398,6 +410,7 @@ class _TrackerPageState extends State<TrackerPage> {
           ),
         ],
       ),
+    ),
     );
   }
 
