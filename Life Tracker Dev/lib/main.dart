@@ -494,6 +494,21 @@ class _TrackerPageState extends State<TrackerPage> {
     SimpleDate dateiteration = SimpleDate(1, 1, date.year);
     List<List<boxcolour>> monthsofyear = List.generate(12, (_) => []);
 
+    List<String> monthofyear = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
     int daysinyear = 365;
 
     int daysinfeb = DateUtils.getDaysInMonth(dateiteration.year, 2);
@@ -537,38 +552,48 @@ class _TrackerPageState extends State<TrackerPage> {
         childAspectRatio: 1.5,
       ),
       itemCount: 12,
+
       itemBuilder: (context, index1) {
-        return GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 7,
-            mainAxisSpacing: 1,
-            crossAxisSpacing: 1,
-            childAspectRatio: 0.7,
-            mainAxisExtent: 15,
-          ),
-          itemCount: DateUtils.getDaysInMonth(date.year, (index1 + 1)),
-          itemBuilder: (context, index2) {
-            final day = monthsofyear[index1][index2];
-
-            double strength = 1;
-            Color colour1 = const Color.fromARGB(255, 233, 192, 168);
-            Color colour2 = const Color.fromARGB(255, 233, 192, 168);
-
-            if (day.success != -1) {
-              strength = (day.success) / 10;
-
-              colour2 = colourworst;
-              colour1 = colourbest;
-            }
-
-            return Container(
-              decoration: BoxDecoration(
-                color: Color.lerp(colour2, colour1, strength),
-                //borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.grey.shade300),
+        return Container(
+          child: Column(
+            children: [
+              Center(
+                child: Text(monthofyear[index1]),
               ),
-            );
-          },
+              GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  mainAxisSpacing: 1,
+                  crossAxisSpacing: 1,
+                  childAspectRatio: 0.7,
+                  mainAxisExtent: 15,
+                ),
+                itemCount: DateUtils.getDaysInMonth(date.year, (index1 + 1)),
+                itemBuilder: (context, index2) {
+                  final day = monthsofyear[index1][index2];
+
+                  double strength = 1;
+                  Color colour1 = const Color.fromARGB(255, 233, 192, 168);
+                  Color colour2 = const Color.fromARGB(255, 233, 192, 168);
+
+                  if (day.success != -1) {
+                    strength = (day.success) / 10;
+
+                    colour2 = colourworst;
+                    colour1 = colourbest;
+                  }
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: Color.lerp(colour2, colour1, strength),
+                      //borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         );
       },
     );
