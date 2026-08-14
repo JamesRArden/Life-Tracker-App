@@ -563,14 +563,14 @@ class _TrackerPageState extends State<TrackerPage> {
                 //borderRadius: BorderRadius.circular(6),
                 border: Border.all(color: Colors.grey.shade300),
               ),
-              /*
+              
               child: Center(
                 child: Text(
                   '${day.date.day}',
                   style: const TextStyle(fontSize: 16),
                 ),
               ),
-              */
+              
             );
           },
         );
