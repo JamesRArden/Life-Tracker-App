@@ -287,7 +287,6 @@ class _TrackerPageState extends State<TrackerPage> {
   String viewtype = "monthly";
   String oppositeviewtype = "Yearly View";
 
-
   @override
   void initState() {
     super.initState();
@@ -297,15 +296,15 @@ class _TrackerPageState extends State<TrackerPage> {
   }
 
   List<Map<String, dynamic>> monthrecords = [];
-  List<Map<String, dynamic>> yearrecords = [];
-  List<Map<String, dynamic>> trackermetadata = [];
+  Map<String, int> yearhashmap = {};
+    List<Map<String, dynamic>> trackermetadata = [];
 
   Color worst = Colors.blue;
   Color best = Colors.purpleAccent;
 
   Future<void> loadrecord() async {
     monthrecords = await _getrelatedrecordsmonth(widget.trackername, date);
-    yearrecords = await _getrelatedrecordsyear(widget.trackername, date);
+    yearhashmap = await _getrelatedrecordsyear(widget.trackername, date);
     trackermetadata = await _gettrackermetadata(widget.trackername);
 
     final trackermetadatarecord = trackermetadata[0];
@@ -402,9 +401,8 @@ class _TrackerPageState extends State<TrackerPage> {
 
                   Text(
                     viewtype == "monthly"
-                    ? "${date.month}/${date.year}"
-                    : "${date.year}",
-                    
+                        ? "${date.month}/${date.year}"
+                        : "${date.year}",
 
                     style: const TextStyle(
                       fontSize: 24,
@@ -470,7 +468,7 @@ class _TrackerPageState extends State<TrackerPage> {
                         widget.trackername,
                       )
                     : _calanderyearview(
-                        yearrecords,
+                        yearhashmap,
                         date,
                         worst,
                         best,
@@ -503,25 +501,24 @@ class _TrackerPageState extends State<TrackerPage> {
       );
 
       final List<boxcolour> days = List.generate(daysinmonth, (index) {
-        SimpleDate day = SimpleDate(
-          index + 1,
-          (m + 1),
-          dateiteration.year,
-        );
+        SimpleDate day = SimpleDate(index + 1, (m + 1), dateiteration.year);
 
+  /*
         for (var row in yearrecords) {
           if (row["date"] == day.tostringyyyymmdd()) {
-            
             return boxcolour(day, row["value"]);
           }
         }
+*/
+      if(yearrecords.containsKey(day.tostringyyyymmdd())){
+        int value = yearrecords[day.tostringyyyymmdd()];
+          return boxcolour(day, value);
+      }
 
         return boxcolour(day, -1);
       });
 
-    
       monthsofyear[m] = days;
-      
     }
 
     return GridView.builder(
@@ -533,7 +530,6 @@ class _TrackerPageState extends State<TrackerPage> {
       ),
       itemCount: 12,
       itemBuilder: (context, index1) {
-    
         return GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 7,
@@ -552,7 +548,7 @@ class _TrackerPageState extends State<TrackerPage> {
 
             if (day.success != -1) {
               strength = (day.success) / 10;
-   
+
               colour2 = colourworst;
               colour1 = colourbest;
             }
@@ -563,14 +559,6 @@ class _TrackerPageState extends State<TrackerPage> {
                 //borderRadius: BorderRadius.circular(6),
                 border: Border.all(color: Colors.grey.shade300),
               ),
-              
-              child: Center(
-                child: Text(
-                  '${day.date.day}',
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ),
-              
             );
           },
         );
@@ -925,7 +913,16 @@ _getrelatedrecordsyear(trackername, day) async {
     orderBy: 'date ASC',
   );
 
-  return records;
+  Map<String, int> yearhashmap = {};
+
+  for (var row in records) {
+      final String date = row["date"] as String;
+      final int value = row["value"] as int;
+
+       yearhashmap[date] = value;
+  }
+ 
+  return yearhashmap;
 }
 
 class SimpleDate {
