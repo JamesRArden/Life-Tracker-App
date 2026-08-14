@@ -297,7 +297,7 @@ class _TrackerPageState extends State<TrackerPage> {
 
   List<Map<String, dynamic>> monthrecords = [];
   Map<String, int> yearhashmap = {};
-    List<Map<String, dynamic>> trackermetadata = [];
+  List<Map<String, dynamic>> trackermetadata = [];
 
   Color worst = Colors.blue;
   Color best = Colors.purpleAccent;
@@ -325,12 +325,20 @@ class _TrackerPageState extends State<TrackerPage> {
       onHorizontalDragEnd: (details) {
         if (details.primaryVelocity! < 0) {
           //negative velo so left swipe
-          date.nextmonth();
+          if (viewtype == "monthly") {
+            date.nextmonth();
+          } else {
+            date.nextyear();
+          }
           loadrecord();
           setState(() {});
         } else {
           //positive velo so right swipe
-          date.prevmonth();
+          if (viewtype == "monthly") {
+            date.prevmonth();
+          } else {
+            date.prevyear();
+          }
           loadrecord();
           setState(() {});
         }
@@ -503,17 +511,17 @@ class _TrackerPageState extends State<TrackerPage> {
       final List<boxcolour> days = List.generate(daysinmonth, (index) {
         SimpleDate day = SimpleDate(index + 1, (m + 1), dateiteration.year);
 
-  /*
+        /*
         for (var row in yearrecords) {
           if (row["date"] == day.tostringyyyymmdd()) {
             return boxcolour(day, row["value"]);
           }
         }
 */
-      if(yearrecords.containsKey(day.tostringyyyymmdd())){
-        int value = yearrecords[day.tostringyyyymmdd()];
+        if (yearrecords.containsKey(day.tostringyyyymmdd())) {
+          int value = yearrecords[day.tostringyyyymmdd()];
           return boxcolour(day, value);
-      }
+        }
 
         return boxcolour(day, -1);
       });
@@ -916,12 +924,12 @@ _getrelatedrecordsyear(trackername, day) async {
   Map<String, int> yearhashmap = {};
 
   for (var row in records) {
-      final String date = row["date"] as String;
-      final int value = row["value"] as int;
+    final String date = row["date"] as String;
+    final int value = row["value"] as int;
 
-       yearhashmap[date] = value;
+    yearhashmap[date] = value;
   }
- 
+
   return yearhashmap;
 }
 
