@@ -294,13 +294,15 @@ class _TrackerPageState extends State<TrackerPage> {
   }
 
   List<Map<String, dynamic>> monthrecords = [];
+  List<Map<String, dynamic>> yearrecords = [];
   List<Map<String, dynamic>> trackermetadata = [];
 
   Color worst = Colors.blue;
   Color best = Colors.purpleAccent;
 
   Future<void> loadrecord() async {
-    monthrecords = await _getrelatedrecords(widget.trackername, date);
+    monthrecords = await _getrelatedrecordsmonth(widget.trackername, date);
+    yearrecords = await _getrelatedrecordsyear(widget.trackername, date);
     trackermetadata = await _gettrackermetadata(widget.trackername);
 
     final trackermetadatarecord = trackermetadata[0];
@@ -354,13 +356,15 @@ class _TrackerPageState extends State<TrackerPage> {
                     setState(() {});
                   }
                   setState(() {});
-                } 
-                else if (value == "changecolours") {
+                } else if (value == "changecolours") {
                   _changecoloursmenue(widget.trackername);
                 }
               },
               itemBuilder: (context) => [
-                PopupMenuItem(value: 'changeview', child: Text(oppositeviewtype)),
+                PopupMenuItem(
+                  value: 'changeview',
+                  child: Text(oppositeviewtype),
+                ),
                 PopupMenuItem(
                   value: 'changecolours',
                   child: Text('Change Colours'),
@@ -379,12 +383,11 @@ class _TrackerPageState extends State<TrackerPage> {
                   Container(
                     child: IconButton(
                       onPressed: () {
-                         if(viewtype == "monthly"){
-                           date.prevmonth();
-                         }
-                         else{
+                        if (viewtype == "monthly") {
+                          date.prevmonth();
+                        } else {
                           date.prevyear();
-                         }
+                        }
                         loadrecord();
                         setState(() {});
                       },
@@ -407,11 +410,10 @@ class _TrackerPageState extends State<TrackerPage> {
                   Container(
                     child: IconButton(
                       onPressed: () {
-                        if(viewtype == "monthly"){
-                               date.nextmonth();
-                        }
-                        else{
-                               date.nextyear();
+                        if (viewtype == "monthly") {
+                          date.nextmonth();
+                        } else {
+                          date.nextyear();
                         }
                         loadrecord();
                         setState(() {});
@@ -444,6 +446,7 @@ class _TrackerPageState extends State<TrackerPage> {
                 ),
               ),
             ),
+
             Expanded(
               child: Padding(
                 padding: EdgeInsetsGeometry.directional(
@@ -451,18 +454,119 @@ class _TrackerPageState extends State<TrackerPage> {
                   end: 10,
                   start: 10,
                 ),
-                child: _calanderview(
-                  monthrecords,
-                  date,
-                  worst,
-                  best,
-                  widget.trackername,
-                ),
+                child: (viewtype == "monthly")
+                    ? _calandermonthview(
+                        monthrecords,
+                        date,
+                        worst,
+                        best,
+                        widget.trackername,
+                      )
+                    : _calanderyearview(
+                        yearrecords,
+                        date,
+                        worst,
+                        best,
+                        widget.trackername,
+                      ),
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  _calanderyearview(yearrecords, date, colourworst, colourbest, trackername) {
+    SimpleDate dateiteration = SimpleDate(1, 1, date.year);
+    List<List<boxcolour>> monthsofyear = List.generate(12, (_) => []);
+
+    int daysinyear = 365;
+
+    int daysinfeb = DateUtils.getDaysInMonth(dateiteration.year, 2);
+
+    if (daysinfeb == 29) {
+      daysinyear = 366;
+    }
+
+    for (int m = 0; m < 12; m++) {
+      int daysinmonth = DateUtils.getDaysInMonth(
+        dateiteration.year,
+        dateiteration.month,
+      );
+
+      final List<boxcolour> days = List.generate(daysinmonth, (index) {
+        SimpleDate day = SimpleDate(
+          index + 1,
+          dateiteration.month,
+          dateiteration.year,
+        );
+
+        for (var row in yearrecords) {
+          if (row["date"] == day.tostringyyyymmdd()) {
+            return boxcolour(day, row["value"]);
+          }
+        }
+
+        return boxcolour(day, -1);
+      });
+
+      print("reached");
+      monthsofyear[m] = days;
+      print(monthsofyear[m]);
+    }
+
+    return GridView.builder(
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 4,
+        crossAxisSpacing: 4,
+        childAspectRatio: 1.5,
+      ),
+      itemCount: 12,
+      itemBuilder: (context, index1) {
+        final month = monthsofyear[index1];
+
+        return GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 7,
+            mainAxisSpacing: 1,
+            crossAxisSpacing: 1,
+            childAspectRatio: 0.7,
+            mainAxisExtent: 15,
+          ),
+          itemCount: DateUtils.getDaysInMonth(date.year, (index1 + 1)),
+          itemBuilder: (context, index2) {
+            final day = monthsofyear[index1][index2];
+
+            double strength = 1;
+            Color colour1 = const Color.fromARGB(255, 233, 192, 168);
+            Color colour2 = const Color.fromARGB(255, 233, 192, 168);
+
+            if (day.success != -1) {
+              strength = (day.success) / 10;
+              colour2 = colourworst;
+              colour1 = colourbest;
+            }
+
+            return Container(
+              decoration: BoxDecoration(
+                color: Color.lerp(colour2, colour1, strength),
+                //borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              /*
+              child: Center(
+                child: Text(
+                  '${day.date.day}',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+              */
+            );
+          },
+        );
+      },
     );
   }
 
@@ -636,7 +740,7 @@ class _TrackerPageState extends State<TrackerPage> {
     setState(() {});
   }
 
-  _calanderview(
+  _calandermonthview(
     monthrecords,
     SimpleDate currentdate,
     Color colourworst,
@@ -777,7 +881,7 @@ class _TrackerPageState extends State<TrackerPage> {
     );
   }
 
-  _getrelatedrecords(trackername, day) async {
+  _getrelatedrecordsmonth(trackername, day) async {
     final db = await AppDatabase.database;
 
     int daysinmonth = DateUtils.getDaysInMonth(day.year, day.month);
@@ -798,6 +902,22 @@ class _TrackerPageState extends State<TrackerPage> {
 
     return records;
   }
+}
+
+_getrelatedrecordsyear(trackername, day) async {
+  final db = await AppDatabase.database;
+
+  String firstday = SimpleDate(1, 1, day.year).tostringyyyymmdd();
+  String lastday = SimpleDate(31, 12, day.year).tostringyyyymmdd();
+
+  final records = await db.query(
+    'daily_entries',
+    where: 'date BETWEEN ? AND ? AND tracker LIKE ?',
+    whereArgs: [firstday, lastday, trackername],
+    orderBy: 'date ASC',
+  );
+
+  return records;
 }
 
 class SimpleDate {
@@ -834,11 +954,11 @@ class SimpleDate {
   }
 
   nextyear() {
-   year++;
+    year++;
   }
 
   prevyear() {
-   year--;
+    year--;
   }
 }
 
