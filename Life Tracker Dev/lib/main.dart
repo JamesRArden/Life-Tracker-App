@@ -560,7 +560,8 @@ class _TrackerPageState extends State<TrackerPage> {
               Center(
                 child: Text(monthofyear[index1]),
               ),
-              GridView.builder(
+              Expanded(
+              child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 7,
                   mainAxisSpacing: 1,
@@ -591,6 +592,7 @@ class _TrackerPageState extends State<TrackerPage> {
                     ),
                   );
                 },
+              ),
               ),
             ],
           ),
