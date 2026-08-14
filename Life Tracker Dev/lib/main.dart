@@ -284,7 +284,8 @@ class _TrackerPageState extends State<TrackerPage> {
   final Color colourscheme = Color.fromARGB(255, 104, 196, 161);
   DateTime today = DateTime.now();
   late SimpleDate date;
-
+  String viewtype = "monthly";
+  String oppositeviewtype = "Yearly View";
   @override
   void initState() {
     super.initState();
@@ -299,7 +300,6 @@ class _TrackerPageState extends State<TrackerPage> {
   Color best = Colors.purpleAccent;
 
   Future<void> loadrecord() async {
-    print("heelloo");
     monthrecords = await _getrelatedrecords(widget.trackername, date);
     trackermetadata = await _gettrackermetadata(widget.trackername);
 
@@ -338,11 +338,34 @@ class _TrackerPageState extends State<TrackerPage> {
             style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
           actions: [
-            IconButton(
-              onPressed: () {
-                _changecoloursmenue(widget.trackername);
+            PopupMenuButton(
+              icon: Icon(Icons.more_vert),
+              onSelected: (value) {
+                if (value == "changeview") {
+                  if (viewtype == "monthly") {
+                    viewtype = "yearly";
+                    oppositeviewtype = "Monthly View";
+                    date = initiatedate(today);
+                    setState(() {});
+                  } else {
+                    viewtype = "monthly";
+                    oppositeviewtype = "Yearly View";
+                    date = initiatedate(today);
+                    setState(() {});
+                  }
+                  setState(() {});
+                } 
+                else if (value == "changecolours") {
+                  _changecoloursmenue(widget.trackername);
+                }
               },
-              icon: Icon(Icons.menu),
+              itemBuilder: (context) => [
+                PopupMenuItem(value: 'changeview', child: Text(oppositeviewtype)),
+                PopupMenuItem(
+                  value: 'changecolours',
+                  child: Text('Change Colours'),
+                ),
+              ],
             ),
           ],
           backgroundColor: Colors.lightBlueAccent,
@@ -356,7 +379,12 @@ class _TrackerPageState extends State<TrackerPage> {
                   Container(
                     child: IconButton(
                       onPressed: () {
-                        date.prevmonth();
+                         if(viewtype == "monthly"){
+                           date.prevmonth();
+                         }
+                         else{
+                          date.prevyear();
+                         }
                         loadrecord();
                         setState(() {});
                       },
@@ -379,7 +407,12 @@ class _TrackerPageState extends State<TrackerPage> {
                   Container(
                     child: IconButton(
                       onPressed: () {
-                        date.nextmonth();
+                        if(viewtype == "monthly"){
+                               date.nextmonth();
+                        }
+                        else{
+                               date.nextyear();
+                        }
                         loadrecord();
                         setState(() {});
                       },
@@ -615,9 +648,6 @@ class _TrackerPageState extends State<TrackerPage> {
       currentdate.month,
     );
 
-    print("returned matchingrecords");
-    print(monthrecords);
-
     final List<boxcolour> days = List.generate(daysinmonth, (index) {
       SimpleDate day = SimpleDate(
         index + 1,
@@ -633,13 +663,6 @@ class _TrackerPageState extends State<TrackerPage> {
 
       return boxcolour(day, -1);
     });
-
-    print("days");
-
-    for (var obj in days) {
-      print(obj.date.tostringyyyymmdd());
-      print(obj.success);
-    }
 
     return GridView.builder(
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -773,8 +796,6 @@ class _TrackerPageState extends State<TrackerPage> {
       orderBy: 'date ASC',
     );
 
-    print("matching records");
-    print(records);
     return records;
   }
 }
@@ -810,6 +831,14 @@ class SimpleDate {
       year--;
       month = 12;
     }
+  }
+
+  nextyear() {
+   year++;
+  }
+
+  prevyear() {
+   year--;
   }
 }
 
