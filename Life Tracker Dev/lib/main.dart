@@ -286,10 +286,13 @@ class _TrackerPageState extends State<TrackerPage> {
   late SimpleDate date;
   String viewtype = "monthly";
   String oppositeviewtype = "Yearly View";
+
+
   @override
   void initState() {
     super.initState();
     date = initiatedate(today);
+
     loadrecord();
   }
 
@@ -347,12 +350,12 @@ class _TrackerPageState extends State<TrackerPage> {
                   if (viewtype == "monthly") {
                     viewtype = "yearly";
                     oppositeviewtype = "Monthly View";
-                    date = initiatedate(today);
+                    loadrecord();
                     setState(() {});
                   } else {
                     viewtype = "monthly";
                     oppositeviewtype = "Yearly View";
-                    date = initiatedate(today);
+                    loadrecord();
                     setState(() {});
                   }
                   setState(() {});
@@ -398,7 +401,11 @@ class _TrackerPageState extends State<TrackerPage> {
                   const Spacer(),
 
                   Text(
-                    "${date.month}/${date.year}",
+                    viewtype == "monthly"
+                    ? "${date.month}/${date.year}"
+                    : "${date.year}",
+                    
+
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -498,12 +505,13 @@ class _TrackerPageState extends State<TrackerPage> {
       final List<boxcolour> days = List.generate(daysinmonth, (index) {
         SimpleDate day = SimpleDate(
           index + 1,
-          dateiteration.month,
+          (m + 1),
           dateiteration.year,
         );
 
         for (var row in yearrecords) {
           if (row["date"] == day.tostringyyyymmdd()) {
+            
             return boxcolour(day, row["value"]);
           }
         }
@@ -511,9 +519,9 @@ class _TrackerPageState extends State<TrackerPage> {
         return boxcolour(day, -1);
       });
 
-      print("reached");
+    
       monthsofyear[m] = days;
-      print(monthsofyear[m]);
+      
     }
 
     return GridView.builder(
@@ -525,8 +533,7 @@ class _TrackerPageState extends State<TrackerPage> {
       ),
       itemCount: 12,
       itemBuilder: (context, index1) {
-        final month = monthsofyear[index1];
-
+    
         return GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 7,
@@ -545,6 +552,7 @@ class _TrackerPageState extends State<TrackerPage> {
 
             if (day.success != -1) {
               strength = (day.success) / 10;
+   
               colour2 = colourworst;
               colour1 = colourbest;
             }
