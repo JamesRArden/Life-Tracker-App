@@ -53,8 +53,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Life Trackers"),
-        backgroundColor: Colors.lightBlueAccent,
+        title: const Text(
+          "Life Trackers",
+          style: TextStyle(color: Color.fromARGB(255, 98, 19, 19)),
+          textScaler: TextScaler.linear(1.5),
+        ),
+        backgroundColor: Color.fromARGB(255, 235, 222, 212),
       ),
 
       // MAIN SCREEN CONTENT
@@ -74,14 +78,21 @@ class _HomePageState extends State<HomePage> {
               },
               child: Card(
                 margin: const EdgeInsets.all(10),
-                color: Colors.lightBlueAccent,
+                color: Color.fromARGB(255, 235, 222, 212),
                 child: Padding(
                   padding: const EdgeInsets.all(20),
 
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(items[index], style: const TextStyle(fontSize: 22)),
+                      Text(
+                        items[index],
+                        style: const TextStyle(
+                          fontSize: 22,
+
+                          color: Color.fromARGB(255, 98, 19, 19),
+                        ),
+                      ),
                       IconButton(
                         onPressed: () {
                           _trackeredit(items[index]);
@@ -281,7 +292,7 @@ class TrackerPage extends StatefulWidget {
 }
 
 class _TrackerPageState extends State<TrackerPage> {
-  final Color colourscheme = Color.fromARGB(255, 104, 196, 161);
+  final Color colourscheme = Color.fromARGB(255, 235, 222, 212);
   DateTime today = DateTime.now();
   late SimpleDate date;
   String viewtype = "monthly";
@@ -347,7 +358,11 @@ class _TrackerPageState extends State<TrackerPage> {
         appBar: AppBar(
           title: Text(
             widget.trackername,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Color.fromARGB(255, 98, 19, 19),
+            ),
           ),
           actions: [
             PopupMenuButton(
@@ -382,7 +397,8 @@ class _TrackerPageState extends State<TrackerPage> {
               ],
             ),
           ],
-          backgroundColor: Colors.lightBlueAccent,
+          //  backgroundColor: Colors.lightBlueAccent,
+          backgroundColor: Color.fromARGB(255, 235, 222, 212),
         ),
         body: Column(
           children: [
@@ -557,42 +573,40 @@ class _TrackerPageState extends State<TrackerPage> {
         return Container(
           child: Column(
             children: [
-              Center(
-                child: Text(monthofyear[index1]),
-              ),
+              Center(child: Text(monthofyear[index1])),
               Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  mainAxisSpacing: 1,
-                  crossAxisSpacing: 1,
-                  childAspectRatio: 0.7,
-                  mainAxisExtent: 15,
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 7,
+                    mainAxisSpacing: 1,
+                    crossAxisSpacing: 1,
+                    childAspectRatio: 0.7,
+                    mainAxisExtent: 15,
+                  ),
+                  itemCount: DateUtils.getDaysInMonth(date.year, (index1 + 1)),
+                  itemBuilder: (context, index2) {
+                    final day = monthsofyear[index1][index2];
+
+                    double strength = 1;
+                    Color colour1 = const Color.fromARGB(255, 233, 192, 168);
+                    Color colour2 = const Color.fromARGB(255, 233, 192, 168);
+
+                    if (day.success != -1) {
+                      strength = (day.success) / 10;
+
+                      colour2 = colourworst;
+                      colour1 = colourbest;
+                    }
+
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: Color.lerp(colour2, colour1, strength),
+                        //borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                    );
+                  },
                 ),
-                itemCount: DateUtils.getDaysInMonth(date.year, (index1 + 1)),
-                itemBuilder: (context, index2) {
-                  final day = monthsofyear[index1][index2];
-
-                  double strength = 1;
-                  Color colour1 = const Color.fromARGB(255, 233, 192, 168);
-                  Color colour2 = const Color.fromARGB(255, 233, 192, 168);
-
-                  if (day.success != -1) {
-                    strength = (day.success) / 10;
-
-                    colour2 = colourworst;
-                    colour1 = colourbest;
-                  }
-
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Color.lerp(colour2, colour1, strength),
-                      //borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                  );
-                },
-              ),
               ),
             ],
           ),
