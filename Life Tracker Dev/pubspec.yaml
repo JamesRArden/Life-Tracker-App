@@ -44,22 +44,14 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: "^0.14.4"
 
-flutter_launcher_icons:
-  android: "launcher_icon"
+
+flutter_icons:
   ios: true
-  image_path: "icons/logo.png"
-  min_sdk_android: 21 # android min sdk min:16, default 21
-  web:
-    generate: true
-    image_path: "icons/logo.png"
-    background_color: "#hexcode"
-    theme_color: "#hexcode"
-  windows:
-    generate: true
-    image_path: "icons/logo.png"
-    icon_size: 48 # min:48, max:256, default: 48
-  macos:
-    generate: true
+  android: true
+  image_path_ios: "icons/logo.png"
+  image_path_android: "icons/logo.png"
+  adaptive_icon_background: "icons/background.png"
+  adaptive_icon_foreground: "icons/logo.png"
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
