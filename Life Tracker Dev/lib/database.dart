@@ -17,13 +17,20 @@ class AppDatabase {
     return await openDatabase(
       path,
       version: 1,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE daily_entries (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             date TEXT,
             tracker TEXT,
-            value INTEGER
+            value INTEGER,
+            FOREIGN KEY (tracker)
+            REFERENCES tracker_meta_data(tracker)
+              ON DELETE CASCADE
+              ON UPDATE CASCADE
           )
         ''');
 
