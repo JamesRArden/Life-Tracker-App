@@ -300,7 +300,7 @@ class _HomePageState extends State<HomePage> {
 
   _updatetrackername(oldname, newname, items) async {
     final prefs = await SharedPreferences.getInstance();
-
+    final db = await AppDatabase.database;
     bool notrepeatname = true;
 
     for (String name in items) {
@@ -315,6 +315,13 @@ class _HomePageState extends State<HomePage> {
       if (index != -1) {
         items[index] = newname;
       }
+
+   await db.update(
+      'tracker_meta_data',
+      {'Tracker': newname},
+      where: 'Tracker = ?',
+      whereArgs: [oldname],
+    );
 
       prefs.setString("Life-Trackers", jsonEncode(items));
       setState(() {});
