@@ -260,9 +260,8 @@ class _HomePageState extends State<HomePage> {
                 TextButton(
                   onPressed: () {
                     setState(() {
-                           _updatetrackername(item, newtrackername, items);
+                      _updatetrackername(item, newtrackername, items);
                     });
-                   
                   },
                   child: Text("Save"),
                 ),
@@ -316,12 +315,12 @@ class _HomePageState extends State<HomePage> {
         items[index] = newname;
       }
 
-   await db.update(
-      'tracker_meta_data',
-      {'Tracker': newname},
-      where: 'Tracker = ?',
-      whereArgs: [oldname],
-    );
+      await db.update(
+        'tracker_meta_data',
+        {'Tracker': newname},
+        where: 'Tracker = ?',
+        whereArgs: [oldname],
+      );
 
       prefs.setString("Life-Trackers", jsonEncode(items));
       setState(() {});
@@ -353,20 +352,20 @@ class _TrackerPageState extends State<TrackerPage> {
   String viewtype = "monthly";
   String oppositeviewtype = "Yearly View";
 
- List<String> monthofyear = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
+  List<String> monthofyear = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
 
   @override
   void initState() {
@@ -375,7 +374,6 @@ class _TrackerPageState extends State<TrackerPage> {
 
     loadrecord();
   }
- 
 
   List<Map<String, dynamic>> monthrecords = [];
   Map<String, int> yearhashmap = {};
@@ -613,13 +611,6 @@ class _TrackerPageState extends State<TrackerPage> {
       final List<boxcolour> days = List.generate(daysinmonth, (index) {
         SimpleDate day = SimpleDate(index + 1, (m + 1), dateiteration.year);
 
-        /*
-        for (var row in yearrecords) {
-          if (row["date"] == day.tostringyyyymmdd()) {
-            return boxcolour(day, row["value"]);
-          }
-        }
-*/
         if (yearrecords.containsKey(day.tostringyyyymmdd())) {
           int value = yearrecords[day.tostringyyyymmdd()];
           return boxcolour(day, value);
@@ -641,7 +632,14 @@ class _TrackerPageState extends State<TrackerPage> {
       itemCount: 12,
 
       itemBuilder: (context, index1) {
-        return Container(
+        return InkWell(
+          onTap: () {
+                    viewtype = "monthly";
+                    oppositeviewtype = "Yearly View";
+                    date.settomonth(index1 + 1);
+                    loadrecord();
+                    setState(() {});
+          },
           child: Column(
             children: [
               Center(child: Text(monthofyear[index1])),
@@ -868,8 +866,6 @@ class _TrackerPageState extends State<TrackerPage> {
       currentdate.month,
     );
 
-     
-
     final List<boxcolour> days = List.generate(daysinmonth, (index) {
       SimpleDate day = SimpleDate(
         index + 1,
@@ -1086,6 +1082,12 @@ class SimpleDate {
 
   prevyear() {
     year--;
+  }
+
+   settomonth(selectedmonth) {
+    if(0 < selectedmonth  && selectedmonth < 13){
+     month = selectedmonth;
+    }
   }
 }
 
