@@ -480,9 +480,9 @@ class _TrackerPageState extends State<TrackerPage> {
                     child: IconButton(
                       onPressed: () {
                         if (viewtype == "monthly") {
-                         // date.prevmonth();
+                          date.prevmonth();
                         } else {
-                         // date.prevyear();
+                          date.prevyear();
                         }
                         loadrecord();
                         setState(() {});
