@@ -402,6 +402,7 @@ class _TrackerPageState extends State<TrackerPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+        onTap: () {},
       onHorizontalDragEnd: (details) {
         if (details.primaryVelocity! < 0) {
           //negative velo so left swipe
@@ -479,9 +480,9 @@ class _TrackerPageState extends State<TrackerPage> {
                     child: IconButton(
                       onPressed: () {
                         if (viewtype == "monthly") {
-                          date.prevmonth();
+                         // date.prevmonth();
                         } else {
-                          date.prevyear();
+                         // date.prevyear();
                         }
                         loadrecord();
                         setState(() {});
