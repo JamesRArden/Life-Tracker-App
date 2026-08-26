@@ -353,6 +353,21 @@ class _TrackerPageState extends State<TrackerPage> {
   String viewtype = "monthly";
   String oppositeviewtype = "Yearly View";
 
+ List<String> monthofyear = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+
   @override
   void initState() {
     super.initState();
@@ -360,6 +375,7 @@ class _TrackerPageState extends State<TrackerPage> {
 
     loadrecord();
   }
+ 
 
   List<Map<String, dynamic>> monthrecords = [];
   Map<String, int> yearhashmap = {};
@@ -480,7 +496,7 @@ class _TrackerPageState extends State<TrackerPage> {
 
                   Text(
                     viewtype == "monthly"
-                        ? "${date.month}/${date.year}"
+                        ? "${monthofyear[date.month - 1]} ${date.year}"
                         : "${date.year}",
 
                     style: const TextStyle(
@@ -851,6 +867,8 @@ class _TrackerPageState extends State<TrackerPage> {
       currentdate.year,
       currentdate.month,
     );
+
+     
 
     final List<boxcolour> days = List.generate(daysinmonth, (index) {
       SimpleDate day = SimpleDate(
