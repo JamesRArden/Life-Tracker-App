@@ -98,7 +98,8 @@ class _HomePageState extends State<HomePage> {
                       ),
                       IconButton(
                         onPressed: () {
-                          _trackeredit(items[index]);
+                          _trackeredit(items[index], items);
+                          setState(() {});
                         },
                         icon: Icon(Icons.more_vert),
                       ),
@@ -115,6 +116,7 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _newtrackernameentry(items);
+          setState(() {});
         },
 
         backgroundColor: const Color.fromARGB(255, 201, 167, 218),
@@ -153,7 +155,8 @@ class _HomePageState extends State<HomePage> {
                 TextButton(
                   onPressed: () async {
                     //stores tracker name
-                    _addtracker(userinput);
+
+                    _addtracker(userinput, items);
                   },
                   child: Text("Add"),
                 ),
@@ -165,32 +168,50 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  _addtracker(userinput) async {
-    items.add(userinput);
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setString("Life-Trackers", jsonEncode(items));
+  _addtracker(userinput, items) async {
+    bool newname = true;
 
-    final db = await AppDatabase.database;
+    for (String name in items) {
+      if (userinput == name) {
+        newname = false;
+      }
+    }
 
-    final basecolour1 = (Colors.blue).value;
-    final basecolour2 = (Colors.purpleAccent).value;
+    if (newname == true) {
+      items.add(userinput);
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString("Life-Trackers", jsonEncode(items));
 
-    await db.insert('tracker_meta_data', {
-      'tracker': userinput,
-      'colour1': basecolour1,
-      'colour2': basecolour2,
-    });
+      final db = await AppDatabase.database;
 
-    setState(() {});
+      final basecolour1 = (Colors.blue).value;
+      final basecolour2 = (Colors.purpleAccent).value;
 
-    if (!mounted) {
-      return;
+      await db.insert('tracker_meta_data', {
+        'tracker': userinput,
+        'colour1': basecolour1,
+        'colour2': basecolour2,
+      });
+
+      setState(() {});
+
+      if (!mounted) {
+        return;
+      } else {
+        Navigator.pop(context);
+      }
     } else {
-      Navigator.pop(context);
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          content: Text("Cant Add Duplicate Name", textAlign: TextAlign.center),
+          backgroundColor: const Color.fromARGB(255, 238, 112, 112),
+        ),
+      );
     }
   }
 
-  _trackeredit(item) {
+  _trackeredit(item, items) {
     String newtrackername = "";
     final controller = TextEditingController(text: item);
 
@@ -209,7 +230,7 @@ class _HomePageState extends State<HomePage> {
                   Expanded(
                     child: TextField(
                       onChanged: (value) {
-                        _updatetrackername(item, value);
+                        newtrackername = value;
                       },
                       textAlign: TextAlign.center,
                       controller: controller,
@@ -223,25 +244,28 @@ class _HomePageState extends State<HomePage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                _deletetracker(item);
-                Navigator.pop(context);
-              },
-              child: Text("Delete", style: TextStyle(color: Colors.red)),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text("Save"),
-            ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Cancel"),
+                ),
+                TextButton(
+                  onPressed: () {
+                    _deletetracker(item);
+                    Navigator.pop(context);
+                  },
+                  child: Text("Delete", style: TextStyle(color: Colors.red)),
+                ),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                           _updatetrackername(item, newtrackername, items);
+                    });
+                   
+                  },
+                  child: Text("Save"),
+                ),
               ],
             ),
           ],
@@ -253,6 +277,7 @@ class _HomePageState extends State<HomePage> {
   _deletetracker(trackername) async {
     final prefs = await SharedPreferences.getInstance();
     final saved = prefs.getString("Life-Trackers");
+    final db = await AppDatabase.database;
 
     if (saved == null) {
       items = [];
@@ -263,27 +288,45 @@ class _HomePageState extends State<HomePage> {
     items.remove(trackername);
 
     prefs.setString("Life-Trackers", jsonEncode(items));
+
+    await db.delete(
+      'tracker_meta_data',
+      where: 'tracker = ?',
+      whereArgs: [trackername],
+    );
+
     setState(() {});
   }
 
-  _updatetrackername(oldname, newname) async {
+  _updatetrackername(oldname, newname, items) async {
     final prefs = await SharedPreferences.getInstance();
-    final saved = prefs.getString("Life-Trackers");
 
-    if (saved == null) {
-      items = [];
+    bool notrepeatname = true;
+
+    for (String name in items) {
+      if (newname == name) {
+        notrepeatname = false;
+      }
+    }
+
+    if (notrepeatname == true) {
+      final index = items.indexOf(oldname);
+
+      if (index != -1) {
+        items[index] = newname;
+      }
+
+      prefs.setString("Life-Trackers", jsonEncode(items));
+      setState(() {});
     } else {
-      items = List<String>.from(jsonDecode(saved));
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          content: Text("Cant Add Duplicate Name", textAlign: TextAlign.center),
+          backgroundColor: const Color.fromARGB(255, 238, 112, 112),
+        ),
+      );
     }
-
-    final index = items.indexOf(oldname);
-
-    if (index != -1) {
-      items[index] = newname;
-    }
-
-    prefs.setString("Life-Trackers", jsonEncode(items));
-    setState(() {});
   }
 }
 

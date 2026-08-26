@@ -22,8 +22,9 @@ class AppDatabase {
           CREATE TABLE daily_entries (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             date TEXT,
-            tracker TEXT,
+            tracker Foreign Key,
             value INTEGER
+            FOREIGN KEY (tracker) REFERENCES tracker_meta_data(tracker) ON DELETE CASCADE
           )
         ''');
 
