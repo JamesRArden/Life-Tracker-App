@@ -15,7 +15,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const HomePage());
+      home: const HomePage(),
+    );
   }
 }
 
@@ -139,18 +140,24 @@ class _HomePageState extends State<HomePage> {
             decoration: InputDecoration(hintText: "Type here..."),
           ),
           actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // close popup
-              },
-              child: Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () async {
-                //stores tracker name
-                _addtracker(userinput);
-              },
-              child: Text("Add"),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context); // close popup
+                  },
+                  child: Text("Cancel"),
+                ),
+                //const Spacer(),
+                TextButton(
+                  onPressed: () async {
+                    //stores tracker name
+                    _addtracker(userinput);
+                  },
+                  child: Text("Add"),
+                ),
+              ],
             ),
           ],
         );
@@ -210,36 +217,32 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-
-                children: [
-                  Text("Remove:"),
-                  Expanded(
-                    child: IconButton(
-                      onPressed: () {
-                        _deletetracker(item);
-                      },
-                      icon: Icon(Icons.delete),
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
           actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               child: Text("Cancel"),
             ),
-
+            TextButton(
+              onPressed: () {
+                _deletetracker(item);
+                Navigator.pop(context);
+              },
+              child: Text("Delete", style: TextStyle(color: Colors.red)),
+            ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
               child: Text("Save"),
+            ),
+              ],
             ),
           ],
         );
