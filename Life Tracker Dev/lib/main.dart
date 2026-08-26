@@ -465,7 +465,9 @@ class _TrackerPageState extends State<TrackerPage> {
                   child: Text('Change Colours'),
                 ),
               ],
+              color: Color.fromARGB(255, 235, 222, 212),
             ),
+               
           ],
           //  backgroundColor: Colors.lightBlueAccent,
           backgroundColor: Color.fromARGB(255, 235, 222, 212),
