@@ -61,6 +61,14 @@ class _HomePageState extends State<HomePage> {
           style: TextStyle(color: Color.fromARGB(255, 98, 19, 19)),
           textScaler: TextScaler.linear(1.5),
         ),
+        actions: [
+          
+          IconButton(
+            onPressed: (){_HomePageInfo();}, 
+            icon: Icon(Icons.help_outline,
+            color: Colors.black,))
+            
+        ],
         backgroundColor: Color.fromARGB(255, 235, 222, 212),
       ),
 
@@ -334,6 +342,21 @@ class _HomePageState extends State<HomePage> {
       );
     }
   }
+
+   _HomePageInfo(){
+      showDialog(
+        context: context, 
+        builder: (context){
+          return AlertDialog(
+            title: Text("Home Page Infomation",textAlign: TextAlign.center),
+               content: 
+               Text("This is the home page where you can see all the trackers you have created in the center of the screen.\nTo add a new tracker click the pluss icon in the bottom right and enter a new name.\nFor each tracker click on the 3 dots on the right side to rename or delete and you click on the tracker to load its tracking calander.",style: TextStyle(fontSize: 20) ,textAlign: TextAlign.center),
+               backgroundColor: Color.fromARGB(255, 235, 222, 212),
+          );
+        }
+        
+      );
+  }
 }
 
 class TrackerPage extends StatefulWidget {
@@ -435,6 +458,10 @@ class _TrackerPageState extends State<TrackerPage> {
             ),
           ),
           actions: [
+            IconButton(onPressed: (){
+              _TrackerPageInfo();
+            }, 
+            icon: Icon(Icons.help_outline, color: Colors.black)),
             PopupMenuButton(
               icon: Icon(Icons.more_vert),
               onSelected: (value) {
@@ -456,9 +483,11 @@ class _TrackerPageState extends State<TrackerPage> {
                 }
               },
               itemBuilder: (context) => [
+                
                 PopupMenuItem(
                   value: 'changeview',
                   child: Text(oppositeviewtype),
+                
                 ),
                 PopupMenuItem(
                   value: 'changecolours',
@@ -1018,6 +1047,21 @@ class _TrackerPageState extends State<TrackerPage> {
     );
 
     return records;
+  }
+
+     _TrackerPageInfo(){
+      showDialog(
+        context: context, 
+        builder: (context){
+          return AlertDialog(
+            title: Text("Tracker Page Infomation",textAlign: TextAlign.center),
+               content: 
+               Text("This the the tracking page where you can see your progress over time.\nFor each day you can click on it then select how well you think you did on a scale of 1-10\nBy clicking on the 3 dots in the top right you can view the whole year or change the colour scheme for your tracker as well.",style: TextStyle(fontSize: 20) ,textAlign: TextAlign.center),
+               backgroundColor: Color.fromARGB(255, 235, 222, 212),
+          );
+        }
+        
+      );
   }
 }
 
