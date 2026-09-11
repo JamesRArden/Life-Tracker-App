@@ -1056,7 +1056,7 @@ class _TrackerPageState extends State<TrackerPage> {
           return AlertDialog(
             title: Text("Tracker Page Infomation",textAlign: TextAlign.center),
                content: 
-               Text("This the the tracking page where you can see your progress over time.\nFor each day you can click on it then select how well you think you did on a scale of 1-10\nBy clicking on the 3 dots in the top right you can view the whole year or change the colour scheme for your tracker as well.",style: TextStyle(fontSize: 20) ,textAlign: TextAlign.center),
+               Text("This page shows your progress across the month and year.\nTap on any day to rate how well you performed on a scale of 1-10.\nIf you open the three dot menu in the top right corner, you can switch colour schemes or view your full yearly history.",style: TextStyle(fontSize: 20) ,textAlign: TextAlign.center),
                backgroundColor: Color.fromARGB(255, 235, 222, 212),
           );
         }
